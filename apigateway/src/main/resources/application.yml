@@ -13,12 +13,23 @@ spring:
         - id: user-service
           uri: lb://user-service
           predicates:
-            - Path=/users/**
+            - Path=/api/users/**
+          filters:
+            - StripPrefix=1
 
         # - id: order-service
         #   uri: lb://order-service
         #   predicates:
         #     - Path=/orders/**
+    globalcors:
+      corsConfigurations:
+        "[/**]":
+        allowedOrigins: "*"
+        allowedMethods: "*"
+        allowedHeaders: "*"
+  whitelist:
+    - /api/users/login
+    - /api/users/register
 
 eureka:
   client:
@@ -27,3 +38,6 @@ eureka:
 
 server:
   port: 8080
+
+jwt:
+  secret: mySecretKey123456789 # Use env var in prod!
