@@ -23,6 +23,13 @@ spring:
             - Path=/api/auth/**
           filters:
             - StripPrefix=1
+
+        - id: room-service
+          uri: lb://room-service
+          predicates:
+            - Path=/api/rooms/**
+          filters:
+            - StripPrefix=1
         # - id: order-service
         #   uri: lb://order-service
         #   predicates:
