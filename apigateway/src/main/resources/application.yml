@@ -29,7 +29,14 @@ spring:
           predicates:
             - Path=/api/rooms/**
           filters:
-            - StripPrefix=1
+            - StripPrefix=2
+
+        - id: showtime-service
+          uri: lb://showtime-service
+          predicates:
+            - Path=/api/showtimes/**
+          filters:
+            - StripPrefix=1    
         # - id: order-service
         #   uri: lb://order-service
         #   predicates:

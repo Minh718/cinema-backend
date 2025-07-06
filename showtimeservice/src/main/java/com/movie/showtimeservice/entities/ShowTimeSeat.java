@@ -1,4 +1,4 @@
-package com.movie.roomservice.entities;
+package com.movie.showtimeservice.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,15 +16,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Seat {
-
+public class ShowTimeSeat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String code; // e.g., A1, B3, etc.
+    private Long seatId;
+    private String seatCode;
+    private boolean available = true;
 
     @ManyToOne
-    @JoinColumn(name = "room_id")
-    private Room room;
+    @JoinColumn(name = "showtime_id")
+    private ShowTime showTime;
 }
