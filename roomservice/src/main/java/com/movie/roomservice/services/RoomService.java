@@ -1,0 +1,50 @@
+package com.movie.roomservice.services;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.movie.roomservice.dtos.RoomCreateRequest;
+import com.movie.roomservice.entities.Room;
+import com.movie.roomservice.entities.Seat;
+import com.movie.roomservice.mappers.RoomMapper;
+import com.movie.roomservice.repositories.RoomRepository;
+import com.movie.roomservice.repositories.SeatRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class RoomService {
+
+    private final RoomRepository roomRepository;
+    private final SeatRepository seatRepository;
+
+    public Room createRoom(RoomCreateRequest roomdto) {
+        Room room = RoomMapper.INSTANCE.toRoom(roomdto);
+        Room savedRoom = roomRepository.save(room);
+
+        List<Seat> seats = new ArrayList<>();
+
+        for (int row = 0; row < room.getNumberOfRows(); row++) {
+            char rowLetter = (char) ('A' + row);
+
+            for (int seatNum = 1; seatNum <= room.getSeatsPerRow(); seatNum++) {
+                String code = rowLetter + String.valueOf(seatNum);
+                Seat seat = Seat.builder()
+                        .code(code)
+                        .available(true)
+                        .room(savedRoom)
+                        .build();
+                seats.add(seat);
+            }
+        }
+
+        // Save all seats
+        seatRepository.saveAll(seats);
+        savedRoom.setSeats(seats);
+
+        return savedRoom;
+    }
+}
