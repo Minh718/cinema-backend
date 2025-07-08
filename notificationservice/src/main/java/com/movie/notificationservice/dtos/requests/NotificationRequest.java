@@ -1,5 +1,6 @@
 package com.movie.notificationservice.dtos.requests;
 
+import com.movie.notificationservice.enums.MailType;
 import com.movie.notificationservice.enums.TypeNotification;
 
 import jakarta.persistence.EnumType;
@@ -10,6 +11,8 @@ import lombok.Data;
 public class NotificationRequest {
     private Long userId;
     private String title;
+    private String to;
     private String message;
     private TypeNotification type;
+    private EmailTemplateInfo emailTemplate;
 }

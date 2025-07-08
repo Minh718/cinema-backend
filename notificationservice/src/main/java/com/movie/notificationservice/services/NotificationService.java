@@ -17,6 +17,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final FirebaseService firebaseService; // optional stub
+    private final EmailService htmlMailService; // optional stub
 
     public void sendNotification(NotificationRequest request) {
         // Save log
@@ -31,11 +32,22 @@ public class NotificationService {
 
         notificationRepository.save(notification);
 
-        if (request.getType() == TypeNotification.PUSH) {
-            boolean success = firebaseService.sendPush(request.getUserId(), request.getTitle(), request.getMessage());
-            notification.setSent(success);
+        boolean sent = false;
+        switch (request.getType()) {
+            case TypeNotification.PUSH ->
+                sent = firebaseService.sendPush(request.getUserId(), request.getTitle(), request.getMessage());
+            case TypeNotification.EMAIL -> {
+                sent = htmlMailService.sendEmail(
+                        request.getTo(),
+                        request.getTitle(),
+                        request.getMessage(),
+                        request.getEmailTemplate());
+            }
+            case TypeNotification.SMS -> {
+            }
         }
 
+        notification.setSent(sent);
         notificationRepository.save(notification);
     }
 }

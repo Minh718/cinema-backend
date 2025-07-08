@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Xác nhận đặt vé</title>
+  </head>
+  <body
+    style="
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      padding: 30px;
+    "
+  >
+    <div
+      style="
+        max-width: 600px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+      "
+    >
+      <h2 style="color: #e50914">🎟️ Xác nhận đặt vé thành công!</h2>
+      <p>Xin chào <strong>${customerName}</strong>,</p>
+      <p>
+        Bạn đã đặt vé thành công cho phim <strong>${movieTitle}</strong> tại
+        <strong>${cinemaName}</strong>.
+      </p>
+
+      <table style="width: 100%; margin: 20px 0; border-collapse: collapse">
+        <tr>
+          <td>🎬 Phim:</td>
+          <td>${movieTitle}</td>
+        </tr>
+        <tr>
+          <td>📍 Rạp:</td>
+          <td>${cinemaName}</td>
+        </tr>
+        <tr>
+          <td>🗓️ Suất chiếu:</td>
+          <td>${showTime}</td>
+        </tr>
+        <tr>
+          <td>💺 Ghế:</td>
+          <td>${seatNumbers}</td>
+        </tr>
+        <tr>
+          <td>💰 Giá:</td>
+          <td>${totalPrice}</td>
+        </tr>
+      </table>
+
+      <p>Vui lòng đến rạp trước 15 phút và xuất trình mã QR bên dưới:</p>
+      <div style="text-align: center">
+        <img src="${qrCodeUrl}" alt="QR Code" width="150" />
+      </div>
+
+      <p style="margin-top: 20px">
+        Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi! 🎉
+      </p>
+    </div>
+  </body>
+</html>
