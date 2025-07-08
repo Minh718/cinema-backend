@@ -20,19 +20,8 @@ public class NotificationService {
     private final EmailService htmlMailService; // optional stub
 
     public void sendNotification(NotificationRequest request) {
-        // Save log
-        Notification notification = Notification.builder()
-                .userId(request.getUserId())
-                .title(request.getTitle())
-                .message(request.getMessage())
-                .type(request.getType())
-                .sent(false)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        notificationRepository.save(notification);
-
         boolean sent = false;
+
         switch (request.getType()) {
             case TypeNotification.PUSH ->
                 sent = firebaseService.sendPush(request.getUserId(), request.getTitle(), request.getMessage());
@@ -47,7 +36,15 @@ public class NotificationService {
             }
         }
 
-        notification.setSent(sent);
+        Notification notification = Notification.builder()
+                .userId(request.getUserId())
+                .title(request.getTitle())
+                .message(request.getMessage())
+                .type(request.getType())
+                .sent(sent)
+                .createdAt(LocalDateTime.now())
+                .build();
+
         notificationRepository.save(notification);
     }
 }
