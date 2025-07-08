@@ -32,6 +32,8 @@ public class Movie {
     private String genre;
     private String thumbnailUrl;
     private LocalDate releaseDate;
+    private LocalDate backdropPath;
+    private LocalDate posterPath;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
