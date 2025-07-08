@@ -43,6 +43,13 @@ spring:
           predicates:
             - Path=/api/bookings/**
           filters:
+            - StripPrefix=1  
+
+        - id: movie-service
+          uri: lb://movie-service
+          predicates:
+            - Path=/api/movies/**
+          filters:
             - StripPrefix=1    
         # - id: order-service
         #   uri: lb://order-service
