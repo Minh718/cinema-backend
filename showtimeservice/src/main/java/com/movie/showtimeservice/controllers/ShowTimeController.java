@@ -5,12 +5,7 @@ import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.movie.showtimeservice.dtos.requests.AutoAssignRequest;
 import com.movie.showtimeservice.dtos.responses.ApiRes;
@@ -20,7 +15,7 @@ import com.movie.showtimeservice.services.ShowTimeService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/showtimes")
+@RequestMapping("/showtimes")
 @RequiredArgsConstructor
 public class ShowTimeController {
 
@@ -34,4 +29,28 @@ public class ShowTimeController {
                 .message("Add product successfully")
                 .build();
     }
+
+    @GetMapping("/public/{movieId}/dates")
+    public ApiRes<List<LocalDate>> getFutureShowDatesByMovieId(@PathVariable("movieId") Long movieId) {
+        List<LocalDate> showDates = showTimeService.getFutureShowDatesByMovieId(movieId);
+        return ApiRes.<List<LocalDate>>builder()
+                .result(showDates)
+                .code(1000)
+                .message("successfully")
+                .build();
+    }
+
+    @GetMapping("/public/{movieId}/times")
+    public ApiRes<List<ShowTime>> getShowTimesByMovieIdAndDate(
+            @PathVariable("movieId") Long movieId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        List<ShowTime> showTimes = showTimeService.getShowTimesByMovieIdAndDate(movieId, date);
+        return ApiRes.<List<ShowTime>>builder()
+                .result(showTimes)
+                .code(1000)
+                .message("successfully")
+                .build();
+    }
+
 }

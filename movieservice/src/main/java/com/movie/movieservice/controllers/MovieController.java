@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/movies")
+@RequestMapping("/movies")
 @RequiredArgsConstructor
 public class MovieController {
     private final MovieService movieService;
@@ -24,9 +24,9 @@ public class MovieController {
         return ApiRes.<Movie>builder().code(200).message("success").result(movieService.createMovie(moviedto)).build();
     }
 
-    @GetMapping("/now-showing")
-    public ApiRes<Movie> getNowShowing() {
-        return ApiRes.<Movie>builder().code(200).message("success").build();
+    @GetMapping("/public/now-showing")
+    public ApiRes<List<Movie>> getNowShowing() {
+        return ApiRes.<List<Movie>>builder().code(200).result(movieService.getNowShowingMovies()).message("success").build();
     }
 
 }

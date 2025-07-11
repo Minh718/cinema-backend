@@ -18,7 +18,7 @@ import com.movie.bookingservice.services.BookingService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/bookings")
+@RequestMapping("/bookings")
 @RequiredArgsConstructor
 public class BookingController {
 

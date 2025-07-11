@@ -4,12 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
+import com.movie.showtimeservice.enums.ShowTimeStatus;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "tbl_showtime")
 public class ShowTime {
 
     @Id
@@ -29,8 +26,8 @@ public class ShowTime {
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
-
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ShowTimeStatus status;
     private String screenType;
     private String language;
     private String subtitle;

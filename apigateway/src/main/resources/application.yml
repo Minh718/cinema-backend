@@ -93,9 +93,9 @@ jwt:
 security:
   gateway:
     whitelist-paths:
-      - /auth/**
-      - /public/**
       - /api/movies/public/**
+      - /api/showtimes/public/**
+      - /api/bookings/public/**
     admin-paths:
       - /api/movies/admin/**
       - /api/users/admin/**

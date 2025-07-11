@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.movie.showtimeservice.enums.ShowTimeStatus;
 import org.springframework.stereotype.Service;
 
 import com.movie.showtimeservice.dtos.requests.AutoAssignRequest;
@@ -63,7 +64,7 @@ public class ShowTimeService {
                 .language("EN")
                 .subtitle("VN")
                 .basePrice(5.5)
-                .status("ACTIVE")
+                .status(ShowTimeStatus.SCHEDULED)
                 .build();
         ShowTime savedShowTime = showTimeRepository.save(showTime);
         ApiRes<List<SeatResponse>> res = roomClient.getSeatsByRoomId(request.getRoomId());
@@ -82,5 +83,12 @@ public class ShowTimeService {
         }
 
         return showTimeRepository.save(showTime);
+    }
+
+    public List<LocalDate> getFutureShowDatesByMovieId(Long movieId) {
+        return showTimeRepository.findDistinctFutureDatesByMovieId(movieId, ShowTimeStatus.SCHEDULED);
+    }
+    public List<ShowTime> getShowTimesByMovieIdAndDate(Long movieId, LocalDate date) {
+        return showTimeRepository.findByMovieIdAndDateAndStatusOrderByStartTimeAsc(movieId, date, ShowTimeStatus.SCHEDULED);
     }
 }
