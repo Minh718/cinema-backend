@@ -8,4 +8,6 @@ import com.movie.movieservice.entities.Movie;
 
 public interface MovieRepository extends JpaRepository<Movie, Long> {
     List<Movie> findByGenreContainingIgnoreCase(String genre);
+
+    List<Movie> findMoviesByStatus(Boolean status);
 }

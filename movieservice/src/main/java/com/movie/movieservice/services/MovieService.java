@@ -9,6 +9,8 @@ import com.movie.movieservice.repositories.MovieRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class MovieService {
@@ -20,4 +22,11 @@ public class MovieService {
         return movieRepository.save(movie);
     }
 
+    public List<Movie> getAllMovies() {
+        return movieRepository.findAll();
+    }
+
+    public List<Movie> getNowShowingMovies() {
+        return movieRepository.findMoviesByStatus(true);
+    }
 }

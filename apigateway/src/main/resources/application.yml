@@ -1,84 +1,83 @@
 spring:
   application:
     name: api-gateway
-
+  main:
+    web-application-type: reactive
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:7777/realms/myrealm
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true # enable dynamic route lookup via Eureka
-          lower-case-service-id: true
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+          routes:
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/api/users/**
+              filters:
+                - StripPrefix=1
 
-      routes:
-        - id: user-service
-          uri: lb://user-service
-          predicates:
-            - Path=/api/users/**
-          filters:
-            - StripPrefix=1
+            - id: auth-service
+              uri: lb://auth-service
+              predicates:
+                - Path=/api/auth/**
+              filters:
+                - StripPrefix=1
 
-        - id: auth-service
-          uri: lb://auth-service
-          predicates:
-            - Path=/api/auth/**
-          filters:
-            - StripPrefix=1
+            - id: room-service
+              uri: lb://room-service
+              predicates:
+                - Path=/api/rooms/**
+              filters:
+                - StripPrefix=2
 
-        - id: room-service
-          uri: lb://room-service
-          predicates:
-            - Path=/api/rooms/**
-          filters:
-            - StripPrefix=2
+            - id: showtime-service
+              uri: lb://showtime-service
+              predicates:
+                - Path=/api/showtimes/**
+              filters:
+                - StripPrefix=1
 
-        - id: showtime-service
-          uri: lb://showtime-service
-          predicates:
-            - Path=/api/showtimes/**
-          filters:
-            - StripPrefix=1  
+            - id: booking-service
+              uri: lb://booking-service
+              predicates:
+                - Path=/api/bookings/**
+              filters:
+                - StripPrefix=1
 
-        - id: booking-service
-          uri: lb://booking-service
-          predicates:
-            - Path=/api/bookings/**
-          filters:
-            - StripPrefix=1  
+            - id: movie-service
+              uri: lb://movie-service
+              predicates:
+                - Path=/api/movies/**
+              filters:
+                - StripPrefix=1
 
-        - id: movie-service
-          uri: lb://movie-service
-          predicates:
-            - Path=/api/movies/**
-          filters:
-            - StripPrefix=1  
+            - id: payment-service
+              uri: lb://payment-service
+              predicates:
+                - Path=/api/payment/**
+              filters:
+                - StripPrefix=1
 
-        - id: payment-service
-          uri: lb://payment-service
-          predicates:
-            - Path=/api/payment/**
-          filters:
-            - StripPrefix=1    
-
-
-        - id: notification-service
-          uri: lb://notification-service
-          predicates:
-            - Path=/api/notifications/**
-          filters:
-            - StripPrefix=1    
-        # - id: order-service
-        #   uri: lb://order-service
-        #   predicates:
-        #     - Path=/orders/**
+            - id: notification-service
+              uri: lb://notification-service
+              predicates:
+                - Path=/api/notifications/**
+              filters:
+                - StripPrefix=1
     globalcors:
       corsConfigurations:
         "[/**]":
         allowedOrigins: "*"
         allowedMethods: "*"
         allowedHeaders: "*"
-  whitelist:
-    - /api/users/login
-    - /api/users/register
 
 eureka:
   client:
@@ -90,3 +89,14 @@ server:
 
 jwt:
   secret: mySecretKey123456789 # Use env var in prod!
+
+security:
+  gateway:
+    whitelist-paths:
+      - /auth/**
+      - /public/**
+      - /api/movies/public/**
+    admin-paths:
+      - /api/movies/admin/**
+      - /api/users/admin/**
+      - /api/booking/admin/**

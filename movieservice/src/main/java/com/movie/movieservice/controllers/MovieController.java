@@ -1,10 +1,8 @@
 package com.movie.movieservice.controllers;
 
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.movie.movieservice.dtos.requests.MovieCreateDto;
 import com.movie.movieservice.dtos.responses.ApiRes;
@@ -12,6 +10,8 @@ import com.movie.movieservice.entities.Movie;
 import com.movie.movieservice.services.MovieService;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/movies")
@@ -22,6 +22,11 @@ public class MovieController {
     @PostMapping
     public ApiRes<Movie> create(@RequestBody MovieCreateDto moviedto) {
         return ApiRes.<Movie>builder().code(200).message("success").result(movieService.createMovie(moviedto)).build();
+    }
+
+    @GetMapping("/now-showing")
+    public ApiRes<Movie> getNowShowing() {
+        return ApiRes.<Movie>builder().code(200).message("success").build();
     }
 
 }

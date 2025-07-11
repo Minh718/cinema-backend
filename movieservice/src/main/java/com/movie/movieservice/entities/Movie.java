@@ -3,12 +3,7 @@ package com.movie.movieservice.entities;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "tbl_movie")
 public class Movie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,6 +26,7 @@ public class Movie {
     private String director;
     private String language;
     private String genre;
+    private Boolean status;
     private String thumbnailUrl;
     private LocalDate releaseDate;
     private LocalDate backdropPath;
