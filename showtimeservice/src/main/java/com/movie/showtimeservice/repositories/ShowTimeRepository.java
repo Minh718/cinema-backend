@@ -12,16 +12,18 @@ import com.movie.showtimeservice.enums.ShowTimeStatus;
 
 public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
 
-    List<ShowTime> findByRoomIdAndDateOrderByStartTimeAsc(Long roomId, LocalDate date);
+        List<ShowTime> findByRoomIdAndCinemaIdIdAndDateOrderByStartTimeAsc(Long roomId, Long cinemaId, LocalDate date);
 
-    @Query("SELECT DISTINCT s.date FROM ShowTime s " +
-            "WHERE s.movieId = :movieId AND s.date >= CURRENT_DATE " +
-            "AND s.status = :status " +
-            "ORDER BY s.date ASC")
-    List<LocalDate> findDistinctFutureDatesByMovieId(@Param("movieId") Long movieId,
-            @Param("status") ShowTimeStatus status);
+        @Query("SELECT DISTINCT s.date FROM ShowTime s " +
+                        "WHERE s.movieId = :movieId AND s.cinemaId = :cinemaId AND s.date >= CURRENT_DATE " +
+                        "AND s.status = :status " +
+                        "ORDER BY s.date ASC")
+        List<LocalDate> findDistinctFutureDatesByMovieIdAndCinemaId(@Param("movieId") Long movieId,
+                        @Param("cinemaId") Long cinemaId,
+                        @Param("status") ShowTimeStatus status);
 
-    List<ShowTime> findByMovieIdAndDateAndStatusOrderByStartTimeAsc(Long movieId, LocalDate date,
-            ShowTimeStatus status);
+        List<ShowTime> findByMovieIdAndCinemaIdAndDateAndStatusOrderByStartTimeAsc(Long movieId, Long cinemaId,
+                        LocalDate date,
+                        ShowTimeStatus status);
 
 }

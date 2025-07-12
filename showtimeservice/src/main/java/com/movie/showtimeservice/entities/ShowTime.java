@@ -35,6 +35,7 @@ public class ShowTime {
 
     private Long movieId;
     private Long roomId;
+    private Long cinemaId;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -31,8 +31,9 @@ public class ShowTimeController {
     }
 
     @GetMapping("/public/{movieId}/dates")
-    public ApiRes<List<LocalDate>> getFutureShowDatesByMovieId(@PathVariable("movieId") Long movieId) {
-        List<LocalDate> showDates = showTimeService.getFutureShowDatesByMovieId(movieId);
+    public ApiRes<List<LocalDate>> getFutureShowDatesByMovieId(@PathVariable("movieId") Long movieId,
+            @PathVariable("cinemaId") Long cinemaId) {
+        List<LocalDate> showDates = showTimeService.getFutureShowDatesByMovieIdAndCinemaId(movieId, cinemaId);
         return ApiRes.<List<LocalDate>>builder()
                 .result(showDates)
                 .code(1000)
@@ -43,9 +44,10 @@ public class ShowTimeController {
     @GetMapping("/public/{movieId}/times")
     public ApiRes<List<ShowTime>> getShowTimesByMovieIdAndDate(
             @PathVariable("movieId") Long movieId,
+            @PathVariable("cinemaId") Long cinemaId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
-        List<ShowTime> showTimes = showTimeService.getShowTimesByMovieIdAndDate(movieId, date);
+        List<ShowTime> showTimes = showTimeService.getShowTimesByMovieIdAndCinemaIdAndDate(movieId, cinemaId, date);
         return ApiRes.<List<ShowTime>>builder()
                 .result(showTimes)
                 .code(1000)

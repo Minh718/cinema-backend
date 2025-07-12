@@ -32,8 +32,8 @@ public class ShowTimeService {
         LocalTime opening = LocalTime.of(8, 0);
         LocalTime closing = LocalTime.of(23, 0);
 
-        List<ShowTime> existing = showTimeRepository.findByRoomIdAndDateOrderByStartTimeAsc(
-                request.getRoomId(), request.getDate());
+        List<ShowTime> existing = showTimeRepository.findByRoomIdAndCinemaIdIdAndDateOrderByStartTimeAsc(
+                request.getRoomId(), request.getCinemaId(), request.getDate());
 
         LocalTime currentStart = opening;
 
@@ -62,6 +62,7 @@ public class ShowTimeService {
                 .roomId(request.getRoomId())
                 .screenType("2D")
                 .language("EN")
+                .cinemaId(request.getCinemaId())
                 .subtitle("VN")
                 .basePrice(5.5)
                 .status(ShowTimeStatus.SCHEDULED)
@@ -85,10 +86,13 @@ public class ShowTimeService {
         return showTimeRepository.save(showTime);
     }
 
-    public List<LocalDate> getFutureShowDatesByMovieId(Long movieId) {
-        return showTimeRepository.findDistinctFutureDatesByMovieId(movieId, ShowTimeStatus.SCHEDULED);
+    public List<LocalDate> getFutureShowDatesByMovieIdAndCinemaId(Long movieId, Long cinemaId) {
+        return showTimeRepository.findDistinctFutureDatesByMovieIdAndCinemaId(movieId, cinemaId,
+                ShowTimeStatus.SCHEDULED);
     }
-    public List<ShowTime> getShowTimesByMovieIdAndDate(Long movieId, LocalDate date) {
-        return showTimeRepository.findByMovieIdAndDateAndStatusOrderByStartTimeAsc(movieId, date, ShowTimeStatus.SCHEDULED);
+
+    public List<ShowTime> getShowTimesByMovieIdAndCinemaIdAndDate(Long movieId, Long cinemaId, LocalDate date) {
+        return showTimeRepository.findByMovieIdAndCinemaIdAndDateAndStatusOrderByStartTimeAsc(movieId, cinemaId, date,
+                ShowTimeStatus.SCHEDULED);
     }
 }
