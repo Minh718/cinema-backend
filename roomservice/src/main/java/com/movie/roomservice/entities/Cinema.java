@@ -45,6 +45,8 @@ public class Cinema {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private String managerId;
+
     @PrePersist
     protected void onCreate() {
         createdAt = updatedAt = LocalDateTime.now();

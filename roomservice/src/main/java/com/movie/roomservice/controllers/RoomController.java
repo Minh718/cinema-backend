@@ -18,6 +18,7 @@ import com.movie.roomservice.entities.Room;
 import com.movie.roomservice.entities.Seat;
 import com.movie.roomservice.services.RoomService;
 
+import jakarta.ws.rs.HeaderParam;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,9 +28,9 @@ public class RoomController {
 
     private final RoomService roomService;
 
-    @PostMapping
-    public Room createRoom(@RequestBody RoomCreateRequest room) {
-        return roomService.createRoom(room);
+    @PostMapping("/manager/create-room")
+    public Room createRoom(@RequestBody RoomCreateRequest room, @HeaderParam("X-User-Id") String userId) {
+        return roomService.createRoom(room, userId);
     }
 
     @GetMapping("/{roomId}/seats")
@@ -37,8 +38,4 @@ public class RoomController {
         List<SeatResponse> seats = roomService.getSeatsByRoomId(roomId);
         return ApiRes.<List<SeatResponse>>builder().code(200).message("Success").result(seats).build();
     }
-    // @GetMapping
-    // public List<Room> getRooms() {
-    // return roomService.getAllRooms();
-    // }
 }

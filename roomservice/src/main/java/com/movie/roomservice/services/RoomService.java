@@ -5,11 +5,15 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.movie.roomservice.CustomException;
+import com.movie.roomservice.ErrorCode;
 import com.movie.roomservice.dtos.RoomCreateRequest;
 import com.movie.roomservice.dtos.responses.SeatResponse;
+import com.movie.roomservice.entities.Cinema;
 import com.movie.roomservice.entities.Room;
 import com.movie.roomservice.entities.Seat;
 import com.movie.roomservice.mappers.RoomMapper;
+import com.movie.roomservice.repositories.CinemaRepository;
 import com.movie.roomservice.repositories.RoomRepository;
 import com.movie.roomservice.repositories.SeatRepository;
 
@@ -21,9 +25,13 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final SeatRepository seatRepository;
+    private final CinemaRepository cinemaRepository;
 
-    public Room createRoom(RoomCreateRequest roomdto) {
+    public Room createRoom(RoomCreateRequest roomdto, String userId) {
         Room room = RoomMapper.INSTANCE.toRoom(roomdto);
+        Cinema cinema = cinemaRepository.findByManagerId(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.CINEMA_NOT_FOUND));
+        room.setCinema(cinema);
         Room savedRoom = roomRepository.save(room);
 
         List<Seat> seats = new ArrayList<>();
