@@ -1,14 +1,20 @@
 package com.movie.movieservice.mappers;
 
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.factory.Mappers;
 
-import com.movie.movieservice.dtos.requests.MovieCreateDto;
+import com.movie.movieservice.dtos.requests.MovieRequestDto;
 import com.movie.movieservice.entities.Movie;
 
 @Mapper
 public interface MovieMapper {
     MovieMapper INSTANCE = Mappers.getMapper(MovieMapper.class);
 
-    Movie toMovie(MovieCreateDto moviedto);
+    Movie toMovie(MovieRequestDto moviedto);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateMovieFromDto(MovieRequestDto dto, @MappingTarget Movie movie);
 }

@@ -3,6 +3,8 @@ package com.movie.movieservice.entities;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.movie.movieservice.enums.MovieStatus;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,7 +28,7 @@ public class Movie {
     private String director;
     private String language;
     private String genre;
-    private Boolean status;
+    private MovieStatus status;
     private String thumbnailUrl;
     private LocalDate releaseDate;
     private LocalDate backdropPath;

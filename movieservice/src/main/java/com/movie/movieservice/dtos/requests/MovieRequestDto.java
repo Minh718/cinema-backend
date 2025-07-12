@@ -2,10 +2,12 @@ package com.movie.movieservice.dtos.requests;
 
 import java.time.LocalDate;
 
+import com.movie.movieservice.enums.MovieStatus;
+
 import lombok.Data;
 
 @Data
-public class MovieCreateDto {
+public class MovieRequestDto {
     private String title;
     private String description;
     private Integer duration;
@@ -13,6 +15,7 @@ public class MovieCreateDto {
     private String language;
     private String genre;
     private String thumbnailUrl;
+    private MovieStatus status;
     private LocalDate releaseDate;
     private LocalDate backdropPath;
     private LocalDate posterPath;
