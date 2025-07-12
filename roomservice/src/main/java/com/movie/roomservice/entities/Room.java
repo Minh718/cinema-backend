@@ -40,6 +40,10 @@ public class Room {
 
     private LocalDateTime updatedAt;
 
+    @ManyToOne
+    @JoinColumn(name = "cinema_id")
+    private Cinema cinema;
+
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
     private List<Seat> seats = new ArrayList<>();
 
