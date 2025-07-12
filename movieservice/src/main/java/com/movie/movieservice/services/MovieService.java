@@ -1,5 +1,6 @@
 package com.movie.movieservice.services;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -8,12 +9,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.movie.movieservice.dtos.requests.MovieRequestDto;
+import com.movie.movieservice.dtos.responses.HomepageMovieRes;
 import com.movie.movieservice.entities.Movie;
 import com.movie.movieservice.enums.MovieStatus;
 import com.movie.movieservice.exceptions.CustomException;
 import com.movie.movieservice.exceptions.ErrorCode;
 import com.movie.movieservice.mappers.MovieMapper;
 import com.movie.movieservice.repositories.MovieRepository;
+import com.movie.movieservice.repositories.httpClients.ShowTimeClient;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 public class MovieService {
 
     private final MovieRepository movieRepository;
+    private final ShowTimeClient showTimeClient;
 
     public Movie createMovie(MovieRequestDto moviedDto) {
         Movie movie = MovieMapper.INSTANCE.toMovie(moviedDto);
@@ -43,6 +47,10 @@ public class MovieService {
 
     public List<Movie> getComingSoonMovies() {
         return movieRepository.findMoviesByStatus(MovieStatus.UPCOMING);
+    }
+
+    public List<Long> getMovieIdsHaveShowTime(Long cinemaId) {
+        return showTimeClient.getNowShowingMovieIdsByCinema(cinemaId);
     }
 
     public Movie getMovieDetail(Long id) {
@@ -77,5 +85,17 @@ public class MovieService {
             pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortBy));
         }
         return movieRepository.findAll(pageable);
+    }
+
+    @Cacheable(value = "homepageMovies", key = "#cinemaId")
+    public HomepageMovieRes getHomepageMovies(Long cinemaId) {
+        List<Movie> nowShowing = getNowShowingMovies();
+
+        List<Movie> upcoming = getComingSoonMovies();
+
+        return HomepageMovieRes.builder()
+                .nowShowing(nowShowing)
+                .upcoming(upcoming)
+                .build();
     }
 }

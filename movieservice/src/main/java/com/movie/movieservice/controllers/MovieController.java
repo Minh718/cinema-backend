@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.movie.movieservice.dtos.requests.MovieRequestDto;
 import com.movie.movieservice.dtos.responses.ApiMetaRes;
 import com.movie.movieservice.dtos.responses.ApiRes;
+import com.movie.movieservice.dtos.responses.HomepageMovieRes;
 import com.movie.movieservice.dtos.responses.MetadataDTO;
 import com.movie.movieservice.entities.Movie;
 import com.movie.movieservice.services.MovieService;
@@ -47,6 +48,15 @@ public class MovieController {
     @GetMapping("/public/now-showing")
     public ApiRes<List<Movie>> getNowShowing() {
         return ApiRes.<List<Movie>>builder().code(200).result(movieService.getNowShowingMovies()).message("success")
+                .build();
+    }
+
+    @GetMapping("/public/homepage")
+    public ApiRes<HomepageMovieRes> getHomepageMovies(@RequestParam Long cinemaId) {
+        HomepageMovieRes HomepageMovieRes = movieService.getHomepageMovies(cinemaId);
+        HomepageMovieRes.setNowShowingMovieIds(movieService.getMovieIdsHaveShowTime(cinemaId));
+        return ApiRes.<HomepageMovieRes>builder().code(200).result(HomepageMovieRes)
+                .message("success")
                 .build();
     }
 

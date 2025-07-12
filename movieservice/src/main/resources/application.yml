@@ -9,6 +9,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/movie_service_db
     username: postgres
     password: password
+  cache:
+    type: redis
 
   jpa:
     hibernate:
