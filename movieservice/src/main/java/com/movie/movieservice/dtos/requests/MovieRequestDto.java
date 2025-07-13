@@ -15,7 +15,6 @@ public class MovieRequestDto {
     private String language;
     private String genre;
     private String thumbnailUrl;
-    private MovieStatus status;
     private LocalDate releaseDate;
     private LocalDate backdropPath;
     private LocalDate posterPath;

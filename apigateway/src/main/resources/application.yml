@@ -31,12 +31,12 @@ spring:
               filters:
                 - StripPrefix=1
 
-            - id: room-service
-              uri: lb://room-service
+            - id: cinema-service
+              uri: lb://cinema-service
               predicates:
-                - Path=/api/rooms/**
+                - Path=/api/cinemas/**
               filters:
-                - StripPrefix=2
+                - StripPrefix=1
 
             - id: showtime-service
               uri: lb://showtime-service

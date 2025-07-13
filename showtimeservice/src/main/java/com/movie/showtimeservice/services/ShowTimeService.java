@@ -15,7 +15,7 @@ import com.movie.showtimeservice.entities.ShowTime;
 import com.movie.showtimeservice.entities.ShowTimeSeat;
 import com.movie.showtimeservice.repositories.ShowTimeRepository;
 import com.movie.showtimeservice.repositories.ShowTimeSeatRepository;
-import com.movie.showtimeservice.repositories.httpClient.RoomClient;
+import com.movie.showtimeservice.repositories.httpClient.CinemaClient;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +25,7 @@ public class ShowTimeService {
 
     private final ShowTimeRepository showTimeRepository;
     private final ShowTimeSeatRepository showTimeSeatRepository;
-    private final RoomClient roomClient;
+    private final CinemaClient cinemaClient;
 
     public ShowTime autoAssign(AutoAssignRequest request) {
         int bufferMinutes = 15;
@@ -68,7 +68,7 @@ public class ShowTimeService {
                 .status(ShowTimeStatus.SCHEDULED)
                 .build();
         ShowTime savedShowTime = showTimeRepository.save(showTime);
-        ApiRes<List<SeatResponse>> res = roomClient.getSeatsByRoomId(request.getRoomId());
+        ApiRes<List<SeatResponse>> res = cinemaClient.getSeatsByRoomId(request.getRoomId());
         List<SeatResponse> seats = res.getResult();
         List<ShowTimeSeat> showTimeSeats = new ArrayList<>();
         if (seats != null) {

@@ -3,6 +3,7 @@ package com.movie.movieservice.controllers;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import com.movie.movieservice.dtos.responses.ApiRes;
 import com.movie.movieservice.dtos.responses.HomepageMovieRes;
 import com.movie.movieservice.dtos.responses.MetadataDTO;
 import com.movie.movieservice.entities.Movie;
+import com.movie.movieservice.enums.MovieStatus;
 import com.movie.movieservice.services.MovieService;
 
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,21 @@ public class MovieController {
     public ApiRes<Movie> updateMovie(@PathVariable("id") Long id, @RequestBody MovieRequestDto moviedto) {
         return ApiRes.<Movie>builder().code(200).message("success")
                 .result(movieService.updateExistingMovie(id, moviedto)).build();
+    }
+
+    @PutMapping("/admin/{id}/status")
+    public ResponseEntity<ApiRes<Movie>> updateMovieStatus(
+            @PathVariable("id") Long id,
+            @RequestParam("status") MovieStatus status) {
+
+        Movie updatedMovie = movieService.updateMovieStatus(id, status);
+
+        return ResponseEntity.ok(
+                ApiRes.<Movie>builder()
+                        .code(200)
+                        .message("Success")
+                        .result(updatedMovie)
+                        .build());
     }
 
     @DeleteMapping("/admin/{id}")
@@ -61,7 +78,7 @@ public class MovieController {
     }
 
     @GetMapping("/admin/all")
-    public ApiMetaRes<List<Movie>> searchMovies(
+    public ApiMetaRes<List<Movie>> getMoviesForAdminTable(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdDate") String sortBy,

@@ -98,4 +98,14 @@ public class MovieService {
                 .upcoming(upcoming)
                 .build();
     }
+
+    public Movie updateMovieStatus(Long id, MovieStatus status) {
+        Optional<Movie> movie = movieRepository.findById(id);
+        if (movie.isPresent()) {
+            Movie existingMovie = movie.get();
+            existingMovie.setStatus(status);
+            return movieRepository.save(existingMovie);
+        }
+        return movie.orElse(null);
+    }
 }
