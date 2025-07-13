@@ -31,3 +31,5 @@ node_modules/
 .vscode/
 
 authservice
+userservice
+pom.xml

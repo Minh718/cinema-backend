@@ -55,4 +55,8 @@ public class ShowTimeController {
                 .build();
     }
 
+    @GetMapping("/now-showing/movie-ids")
+    List<Long> getNowShowingMovieIdsByCinema(@RequestParam("cinemaId") Long cinemaId) {
+        return showTimeService.getNowShowingMovieIdsByCinemaId(cinemaId);
+    }
 }

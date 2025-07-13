@@ -26,4 +26,9 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
                         LocalDate date,
                         ShowTimeStatus status);
 
+        @Query("SELECT DISTINCT s.movieId FROM ShowTime s " +
+                        "WHERE s.cinemaId = :cinemaId " +
+                        "AND s.status = :status " +
+                        "AND s.date >= CURRENT_DATE")
+        List<Long> findNowShowingMovieIdsByCinemaId(@Param("cinemaId") Long cinemaId, ShowTimeStatus status);
 }

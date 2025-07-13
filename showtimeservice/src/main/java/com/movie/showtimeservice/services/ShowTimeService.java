@@ -95,4 +95,9 @@ public class ShowTimeService {
         return showTimeRepository.findByMovieIdAndCinemaIdAndDateAndStatusOrderByStartTimeAsc(movieId, cinemaId, date,
                 ShowTimeStatus.SCHEDULED);
     }
+
+    public List<Long> getNowShowingMovieIdsByCinemaId(Long cinemaId) {
+
+        return showTimeRepository.findNowShowingMovieIdsByCinemaId(cinemaId, ShowTimeStatus.SCHEDULED);
+    }
 }
