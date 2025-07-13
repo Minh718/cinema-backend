@@ -1,9 +1,11 @@
 package com.movie.bookingservice.services;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -101,5 +103,20 @@ public class RedisService {
 
     public void addSet(String key, Object value) {
         redisTemplate.opsForSet().add(key, value);
+    }
+
+    public Set<Long> getSeatIds(String redisKey) {
+        Set<Object> rawSet = redisTemplate.opsForSet().members(redisKey);
+        if (rawSet == null)
+            return Collections.emptySet();
+
+        return rawSet.stream()
+                .map(Object::toString)
+                .map(Long::valueOf)
+                .collect(Collectors.toSet());
+    }
+
+    public void removeHeatSeats(String redisKey, List<Long> seatIds) {
+        redisTemplate.opsForSet().remove(redisKey, seatIds.toArray());
     }
 }

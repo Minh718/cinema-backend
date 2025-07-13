@@ -11,11 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "showtime-service")
 public interface ShowTimeClient {
 
-    @GetMapping("/api/showtimes/now-showing/movie-ids")
+    @GetMapping("/showtimes/now-showing/movie-ids")
     List<Long> getNowShowingMovieIdsByCinema(@RequestParam("cinemaId") Long cinemaId);
-
-    // @GetMapping("/api/showtimes/upcoming/movie-ids")
-    // List<Long> getUpcomingMovieIdsByCinema(@RequestParam("cinemaId") Long
-    // cinemaId);
 
 }

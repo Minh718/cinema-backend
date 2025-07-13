@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MomoPaymentRequest {
+public class MomoPaymentReq {
     private String partnerCode;
     private String accessKey;
     private String requestId;

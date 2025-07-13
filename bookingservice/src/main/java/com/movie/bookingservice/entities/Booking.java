@@ -2,6 +2,9 @@ package com.movie.bookingservice.entities;
 
 import java.time.LocalDateTime;
 
+import com.movie.bookingservice.enums.BookingStatus;
+import com.movie.bookingservice.enums.PaymentStatus;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,9 +31,9 @@ public class Booking {
 
     private Double totalPrice;
 
-    private String paymentStatus; // UNPAID, PAID, FAILED
-    private String bookingStatus; // CONFIRMED, CANCELLED
-
+    private PaymentStatus paymentStatus;
+    private String urlPayment;
+    private BookingStatus bookingStatus;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

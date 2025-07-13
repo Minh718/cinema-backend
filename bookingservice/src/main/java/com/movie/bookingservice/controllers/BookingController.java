@@ -1,6 +1,7 @@
 package com.movie.bookingservice.controllers;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,4 +32,17 @@ public class BookingController {
                 .build();
     }
 
+    @GetMapping("/{showtimeId}/booked-seats")
+    public ApiRes<Set<Long>> getBookedSeats(@PathVariable("showtimeId") Long showtimeId) {
+        return ApiRes.<Set<Long>>builder().result(bookingService.getBookedSeatIds(showtimeId)).code(1000)
+                .message("get booked seats success")
+                .build();
+    }
+
+    @GetMapping("/{showtimeId}/heat-seats")
+    public ApiRes<Set<Long>> getHeatSeatIds(@PathVariable("showtimeId") Long showtimeId) {
+        return ApiRes.<Set<Long>>builder().result(bookingService.getHeatSeatIds(showtimeId)).code(1000)
+                .message("get heat seats success")
+                .build();
+    }
 }

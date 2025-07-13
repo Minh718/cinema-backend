@@ -43,18 +43,17 @@ public class MovieController {
     }
 
     @PutMapping("/admin/{id}/status")
-    public ResponseEntity<ApiRes<Movie>> updateMovieStatus(
+    public ApiRes<Movie> updateMovieStatus(
             @PathVariable("id") Long id,
             @RequestParam("status") MovieStatus status) {
 
         Movie updatedMovie = movieService.updateMovieStatus(id, status);
 
-        return ResponseEntity.ok(
-                ApiRes.<Movie>builder()
-                        .code(200)
-                        .message("Success")
-                        .result(updatedMovie)
-                        .build());
+        ApiRes.<Movie>builder()
+                .code(200)
+                .message("Success")
+                .result(updatedMovie)
+                .build();
     }
 
     @DeleteMapping("/admin/{id}")

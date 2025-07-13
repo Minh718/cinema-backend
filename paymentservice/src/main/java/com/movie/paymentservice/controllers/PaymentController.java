@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.movie.paymentservice.dtos.responses.ApiRes;
-import com.movie.paymentservice.dtos.responses.MomoPaymentResponse;
+import com.movie.paymentservice.dtos.responses.MomoPaymentRes;
 import com.movie.paymentservice.services.PaymentService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,10 +22,10 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/momo")
-    public ApiRes<MomoPaymentResponse> createPayment(@RequestParam String orderId,
+    public ApiRes<MomoPaymentRes> createMomoPayment(@RequestParam String orderId,
             @RequestParam String amount,
             @RequestParam String orderInfo) {
-        MomoPaymentResponse response = paymentService.createMomoPayment(orderId, amount, orderInfo);
-        return ApiRes.<MomoPaymentResponse>builder().code(200).message("Success").result(response).build();
+        MomoPaymentRes response = paymentService.createMomoPayment(orderId, amount, orderInfo);
+        return ApiRes.<MomoPaymentRes>builder().code(200).message("Success").result(response).build();
     }
 }

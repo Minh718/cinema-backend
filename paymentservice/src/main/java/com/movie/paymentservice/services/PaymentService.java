@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.movie.paymentservice.configurations.MomoConfig;
-import com.movie.paymentservice.dtos.requests.MomoPaymentRequest;
-import com.movie.paymentservice.dtos.responses.MomoPaymentResponse;
+import com.movie.paymentservice.dtos.requests.MomoPaymentReq;
+import com.movie.paymentservice.dtos.responses.MomoPaymentRes;
 import com.movie.paymentservice.utils.MomoSignatureUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -27,11 +27,11 @@ public class PaymentService {
     private final MomoSignatureUtil momoSignatureUtil;
     private final RestTemplate restTemplate;
 
-    public MomoPaymentResponse createMomoPayment(String orderId, String amount, String orderInfo) {
+    public MomoPaymentRes createMomoPayment(String orderId, String amount, String orderInfo) {
         String requestId = UUID.randomUUID().toString();
         String extraData = Base64.getEncoder().encodeToString("booking".getBytes());
 
-        MomoPaymentRequest req = MomoPaymentRequest.builder()
+        MomoPaymentReq req = MomoPaymentReq.builder()
                 .partnerCode(momoConfig.getPartnerCode())
                 .accessKey(momoConfig.getAccessKey())
                 .requestId(requestId)
@@ -49,10 +49,10 @@ public class PaymentService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<MomoPaymentRequest> entity = new HttpEntity<>(req, headers);
+        HttpEntity<MomoPaymentReq> entity = new HttpEntity<>(req, headers);
 
-        ResponseEntity<MomoPaymentResponse> response = restTemplate.exchange(
-                momoConfig.getEndpoint(), HttpMethod.POST, entity, MomoPaymentResponse.class);
+        ResponseEntity<MomoPaymentRes> response = restTemplate.exchange(
+                momoConfig.getEndpoint(), HttpMethod.POST, entity, MomoPaymentRes.class);
 
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
             return response.getBody(); // or deeplink

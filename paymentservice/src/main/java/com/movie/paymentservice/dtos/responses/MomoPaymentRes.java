@@ -3,7 +3,7 @@ package com.movie.paymentservice.dtos.responses;
 import lombok.Data;
 
 @Data
-public class MomoPaymentResponse {
+public class MomoPaymentRes {
     private int resultCode;
     private String message;
     private String payUrl;
