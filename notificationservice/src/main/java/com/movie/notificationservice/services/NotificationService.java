@@ -28,7 +28,6 @@ public class NotificationService {
             case TypeNotification.EMAIL -> {
                 sent = htmlMailService.sendEmail(
                         request.getTo(),
-                        request.getTitle(),
                         request.getMessage(),
                         request.getEmailTemplate());
             }

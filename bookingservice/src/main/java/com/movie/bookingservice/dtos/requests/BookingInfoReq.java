@@ -1,5 +1,7 @@
 package com.movie.bookingservice.dtos.requests;
 
+import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -19,10 +19,13 @@ import com.movie.paymentservice.configurations.MomoConfig;
 import com.movie.paymentservice.configurations.VNPayConfig;
 import com.movie.paymentservice.dtos.requests.BookingInfoReq;
 import com.movie.paymentservice.dtos.requests.CreatePaymentReq;
+import com.movie.paymentservice.dtos.requests.EmailTemplateInfo;
 import com.movie.paymentservice.dtos.requests.MomoCallback;
 import com.movie.paymentservice.dtos.requests.MomoPaymentReq;
+import com.movie.paymentservice.dtos.requests.NotificationReq;
 import com.movie.paymentservice.dtos.responses.MomoPaymentRes;
 import com.movie.paymentservice.entities.Payment;
+import com.movie.paymentservice.enums.MailType;
 import com.movie.paymentservice.enums.PaymentMethod;
 import com.movie.paymentservice.enums.PaymentStatus;
 import com.movie.paymentservice.repositories.PaymentRepository;
@@ -46,6 +49,7 @@ public class PaymentService {
     private final BookingClient bookingClient;
     private final MomoClient momoClient;
     private final ObjectMapper ObjectMapper;
+    private final NotificationKafkaProducer notificationKafkaProducer;
 
     public String createPayment(CreatePaymentReq request, HttpServletRequest httpServletRequest) {
         String urlPayment = switch (request.getPaymentMethod()) {
@@ -90,26 +94,62 @@ public class PaymentService {
         }
 
         String json = payload.getOrderInfo();
-        BookingInfoReq info = ObjectMapper.readValue(json, BookingInfoReq.class);
+        BookingInfoReq bookingInfoReq = ObjectMapper.readValue(json, BookingInfoReq.class);
         PaymentStatus status = payload.getResultCode() == 0 ? PaymentStatus.PAID : PaymentStatus.FAILED;
 
-        bookingClient.updateStatusToPaidAndRedisSeatIds(info.getBookingId(), status);
-        savePayment(payload.getTransId(), payload.getAmount(), info.getBookingId(), status, PaymentMethod.MOMO,
+        processBookingAndPayment(
+                bookingInfoReq,
+                payload.getTransId(),
+                payload.getAmount(),
+                status,
+                PaymentMethod.MOMO,
                 payload.getMessage());
     }
 
-    private void savePayment(String transId, Long amount, Long bookingId, PaymentStatus status,
-            PaymentMethod paymentMethod, String message) {
+    public void processVnpayCallback(Map<String, String> reqParams)
+            throws JsonMappingException, JsonProcessingException {
+        String vnp_SecureHash = reqParams.remove("vnp_SecureHash");
+        if (!vnp_SecureHash.equals(VNPayUtil.getVnpSecureHash(reqParams, vnPayConfig.getSecretKey()))) {
+            throw new RuntimeException("Invalid VNPAY signature");
+        }
+        String json = reqParams.get("vnp_OrderInfo");
+        BookingInfoReq bookingInfoReq = ObjectMapper.readValue(json, BookingInfoReq.class);
+
+        String transId = reqParams.get("vnp_TransactionNo");
+        long amount = Long.parseLong(reqParams.get("vnp_Amount")) / 2500000;
+
+        PaymentStatus status = reqParams.get("vnp_ResponseCode").equals("00") ? PaymentStatus.PAID
+                : PaymentStatus.FAILED;
+        processBookingAndPayment(
+                bookingInfoReq,
+                transId,
+                amount,
+                status,
+                PaymentMethod.VNPAY,
+                vnp_SecureHash);
+    }
+
+    private void processBookingAndPayment(BookingInfoReq bookingInfo, String transId, long amount,
+            PaymentStatus status, PaymentMethod method, String message) {
+        bookingClient.updateStatusToPaidAndRedisSeatIds(bookingInfo.getBookingId(), status);
+
         Payment payment = Payment.builder()
-                .bookingId(bookingId)
+                .bookingId(bookingInfo.getBookingId())
                 .amount(amount / 1.0)
                 .paymentStatus(status)
-                .paymentMethod(paymentMethod)
+                .paymentMethod(method)
                 .transactionId(transId)
                 .message(message)
                 .build();
-
         paymentRepository.save(payment);
+
+        EmailTemplateInfo emailTemplate = new EmailTemplateInfo(MailType.BOOKING_CONFIRMATION, bookingInfo.toMap());
+        NotificationReq notification = NotificationReq.builder()
+                .to(bookingInfo.getEmail())
+                .emailTemplate(emailTemplate)
+                .build();
+        if (status == PaymentStatus.PAID)
+            notificationKafkaProducer.sendNotification(notification);
     }
 
     public String createVnPayPayment(HttpServletRequest request, double amount, String orderInfo) {
@@ -147,20 +187,5 @@ public class PaymentService {
         queryUrl.append("&vnp_SecureHash=").append(secureHash);
 
         return vnPayConfig.getVnpPayUrl() + "?" + queryUrl.toString();
-    }
-
-    public void processVnpayCallback(Map<String, String> reqParams) {
-        String vnp_SecureHash = reqParams.remove("vnp_SecureHash");
-        if (!vnp_SecureHash.equals(VNPayUtil.getVnpSecureHash(reqParams, vnPayConfig.getSecretKey()))) {
-            throw new RuntimeException("Invalid VNPAY signature");
-        }
-        Long bookingId = Long.parseLong(reqParams.get("vnp_OrderInfo"));
-        String transId = reqParams.get("vnp_TransactionNo");
-        long amount = Long.parseLong(reqParams.get("vnp_Amount")) / 2500000;
-
-        PaymentStatus status = reqParams.get("vnp_ResponseCode").equals("00") ? PaymentStatus.PAID
-                : PaymentStatus.FAILED;
-        bookingClient.updateStatusToPaidAndRedisSeatIds(bookingId, status);
-        savePayment(transId, amount, bookingId, status, PaymentMethod.VNPAY, vnp_SecureHash);
     }
 }

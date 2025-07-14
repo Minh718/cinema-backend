@@ -36,14 +36,14 @@ public class EmailService {
     @NonFinal
     private String sender;
 
-    public boolean sendEmail(String to, String subject, String content, EmailTemplateInfo emailTemplate) {
+    public boolean sendEmail(String to, String content, EmailTemplateInfo emailTemplate) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper mailMessage = new MimeMessageHelper(mimeMessage, "utf-8");
             String htmlContent = buildEmailContent(emailTemplate.getMailType(), emailTemplate.getTemplateData());
             mailMessage.setFrom(sender);
             mailMessage.setTo(to);
-            mailMessage.setSubject(subject);
+            mailMessage.setSubject(emailTemplate.getMailType().getSubject());
             mailMessage.setText(htmlContent);
 
             mailSender.send(mimeMessage);
