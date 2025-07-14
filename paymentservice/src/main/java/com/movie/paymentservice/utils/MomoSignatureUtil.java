@@ -5,7 +5,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.stereotype.Component;
 
-import com.movie.paymentservice.dtos.requests.MomoPaymentRequest;
+import com.movie.paymentservice.dtos.requests.MomoPaymentReq;
 
 @Component
 public class MomoSignatureUtil {
@@ -17,7 +17,7 @@ public class MomoSignatureUtil {
         return sb.toString();
     }
 
-    public String generateSignature(MomoPaymentRequest req, String secretKey) {
+    public String generateSignature(MomoPaymentReq req, String secretKey) {
         String raw = "accessKey=" + req.getAccessKey()
                 + "&amount=" + req.getAmount()
                 + "&extraData=" + req.getExtraData()

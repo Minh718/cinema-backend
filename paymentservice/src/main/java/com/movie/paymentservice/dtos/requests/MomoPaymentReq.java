@@ -21,5 +21,6 @@ public class MomoPaymentReq {
     private String requestType;
     private String extraData;
     private String signature;
+    @Builder.Default
     private String lang = "en";
 }
