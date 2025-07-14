@@ -29,7 +29,6 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String orderId; // e.g. bookingId
     private Long bookingId;
     private Double amount;
 
@@ -40,7 +39,6 @@ public class Payment {
     private PaymentMethod paymentMethod; // MOMO, ZALOPAY
 
     private String transactionId;
-    private String requestId;
     private String message;
     private LocalDateTime createdAt;
 

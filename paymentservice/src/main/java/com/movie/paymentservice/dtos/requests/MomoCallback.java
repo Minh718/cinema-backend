@@ -16,7 +16,7 @@ public class MomoCallback {
     private String orderInfo;
     private String orderType;
 
-    private Long transId;
+    private String transId;
     private Integer resultCode; // 0 = success, others = failure
     private String message;
 

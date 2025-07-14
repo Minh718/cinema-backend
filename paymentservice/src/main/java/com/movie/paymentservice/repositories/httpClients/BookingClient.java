@@ -1,4 +1,4 @@
-package com.movie.paymentservice.repositories.httpCliens;
+package com.movie.paymentservice.repositories.httpClients;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;

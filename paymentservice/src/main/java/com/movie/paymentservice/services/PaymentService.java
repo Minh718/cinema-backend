@@ -1,21 +1,19 @@
 package com.movie.paymentservice.services;
 
+import java.lang.reflect.Method;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import com.movie.paymentservice.configurations.MomoConfig;
+import com.movie.paymentservice.configurations.VNPayConfig;
 import com.movie.paymentservice.dtos.requests.CreatePaymentReq;
 import com.movie.paymentservice.dtos.requests.MomoCallback;
 import com.movie.paymentservice.dtos.requests.MomoPaymentReq;
@@ -24,10 +22,13 @@ import com.movie.paymentservice.entities.Payment;
 import com.movie.paymentservice.enums.PaymentMethod;
 import com.movie.paymentservice.enums.PaymentStatus;
 import com.movie.paymentservice.repositories.PaymentRepository;
-import com.movie.paymentservice.repositories.httpCliens.BookingClient;
-import com.movie.paymentservice.repositories.httpCliens.MomoClient;
+import com.movie.paymentservice.repositories.httpClients.BookingClient;
+import com.movie.paymentservice.repositories.httpClients.MomoClient;
 import com.movie.paymentservice.utils.MomoSignatureUtil;
+import com.movie.paymentservice.utils.MomoUtil;
+import com.movie.paymentservice.utils.VNPayUtil;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -35,51 +36,20 @@ import lombok.RequiredArgsConstructor;
 public class PaymentService {
 
     private final MomoConfig momoConfig;
+    private final VNPayConfig vnPayConfig;
     private final MomoSignatureUtil momoSignatureUtil;
     private final PaymentRepository paymentRepository;
     private final BookingClient bookingClient;
     private final MomoClient momoClient;
 
-    public String createPayment(CreatePaymentReq request) {
+    public String createPayment(CreatePaymentReq request, HttpServletRequest httpServletRequest) {
         String urlPayment = switch (request.getPaymentMethod()) {
             case MOMO -> createMomoPayment(request.getOrderId(), request.getAmount(), request.getOrderInfo());
+            case VNPAY ->
+                createVnPayPayment(httpServletRequest, Double.valueOf(request.getAmount()), request.getOrderInfo());
             default -> null;
         };
         return urlPayment;
-    }
-
-    public boolean verifySignature(MomoCallback callback) {
-        try {
-            String rawData = String.format(
-                    "accessKey=%s&amount=%d&extraData=%s&message=%s&orderId=%s&orderInfo=%s&orderType=%s&partnerCode=%s&payType=%s&requestId=%s&responseTime=%d&resultCode=%d&transId=%d",
-                    momoConfig.getAccessKey(),
-                    callback.getAmount(),
-                    callback.getExtraData(),
-                    callback.getMessage(),
-                    callback.getOrderId(),
-                    callback.getOrderInfo(),
-                    callback.getOrderType(),
-                    callback.getPartnerCode(),
-                    callback.getPayType(),
-                    callback.getRequestId(),
-                    callback.getResponseTime(),
-                    callback.getResultCode(),
-                    callback.getTransId());
-
-            String generatedSignature = hmacSHA256(rawData, momoConfig.getAccessKey());
-
-            return generatedSignature.equals(callback.getSignature());
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private String hmacSHA256(String data, String key) throws Exception {
-        Mac hmac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "HmacSHA256");
-        hmac.init(secretKeySpec);
-        byte[] hash = hmac.doFinal(data.getBytes("UTF-8"));
-        return Base64.getEncoder().encodeToString(hash);
     }
 
     public String createMomoPayment(String orderId, String amount, String orderInfo) {
@@ -110,30 +80,81 @@ public class PaymentService {
     }
 
     public void processMomoCallback(MomoCallback payload) {
-        if (!verifySignature(payload)) {
+        if (!MomoUtil.verifySignature(payload, momoConfig.getAccessKey())) {
             throw new RuntimeException("Invalid MoMo signature");
         }
 
-        String bookingId = payload.getOrderInfo();
+        long bookingId = Long.parseLong(payload.getOrderInfo());
         PaymentStatus status = payload.getResultCode() == 0 ? PaymentStatus.PAID : PaymentStatus.FAILED;
 
         bookingClient.updateStatusToPaidAndRedisSeatIds(Long.valueOf(bookingId), status);
-        savePayment(payload, bookingId, status, PaymentMethod.MOMO);
+        savePayment(payload.getTransId(), payload.getAmount(), bookingId, status, PaymentMethod.MOMO,
+                payload.getMessage());
     }
 
-    private void savePayment(MomoCallback payload, String bookingId, PaymentStatus status,
-            PaymentMethod paymentMethod) {
+    private void savePayment(String transId, Long amount, Long bookingId, PaymentStatus status,
+            PaymentMethod paymentMethod, String message) {
         Payment payment = Payment.builder()
-                .orderId(payload.getOrderId())
-                .bookingId(Long.valueOf(bookingId))
-                .amount(payload.getAmount() / 1.0)
+                .bookingId(bookingId)
+                .amount(amount / 1.0)
                 .paymentStatus(status)
                 .paymentMethod(paymentMethod)
-                .transactionId(String.valueOf(payload.getTransId()))
-                .requestId(payload.getRequestId())
-                .message(payload.getMessage())
+                .transactionId(transId)
+                .message(message)
                 .build();
 
         paymentRepository.save(payment);
+    }
+
+    public String createVnPayPayment(HttpServletRequest request, double amount, String orderInfo) {
+        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig();
+
+        double exchangeRate = 25000d;
+        long vndAmount = Math.round(amount * exchangeRate); // USD -> VND
+        long vnpAmount = vndAmount * 100; // Multiply by 100 as VNPAY expects smallest unit
+
+        vnpParamsMap.put("vnp_Amount", String.valueOf(vnpAmount));
+        vnpParamsMap.put("vnp_OrderInfo", orderInfo);
+        vnpParamsMap.put("vnp_IpAddr", VNPayUtil.getIpAddress(request));
+
+        List<String> fieldNames = new ArrayList<>(vnpParamsMap.keySet());
+        Collections.sort(fieldNames);
+
+        StringBuilder hashData = new StringBuilder();
+        StringBuilder queryUrl = new StringBuilder();
+        for (String fieldName : fieldNames) {
+            String fieldValue = vnpParamsMap.get(fieldName);
+            if (fieldValue != null && !fieldValue.isEmpty()) {
+                String encodedName = URLEncoder.encode(fieldName, StandardCharsets.US_ASCII);
+                String encodedValue = URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII);
+                hashData.append(encodedName).append('=').append(encodedValue).append('&');
+                queryUrl.append(encodedName).append('=').append(encodedValue).append('&');
+            }
+        }
+
+        if (hashData.length() > 0)
+            hashData.setLength(hashData.length() - 1);
+        if (queryUrl.length() > 0)
+            queryUrl.setLength(queryUrl.length() - 1);
+        String secureHash = VNPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData.toString());
+
+        queryUrl.append("&vnp_SecureHash=").append(secureHash);
+
+        return vnPayConfig.getVnpPayUrl() + "?" + queryUrl.toString();
+    }
+
+    public void processVnpayCallback(Map<String, String> reqParams) {
+        String vnp_SecureHash = reqParams.remove("vnp_SecureHash");
+        if (!vnp_SecureHash.equals(VNPayUtil.getVnpSecureHash(reqParams, vnPayConfig.getSecretKey()))) {
+            throw new RuntimeException("Invalid VNPAY signature");
+        }
+        Long bookingId = Long.parseLong(reqParams.get("vnp_OrderInfo"));
+        String transId = reqParams.get("vnp_TransactionNo");
+        long amount = Long.parseLong(reqParams.get("vnp_Amount")) / 2500000;
+
+        PaymentStatus status = reqParams.get("vnp_ResponseCode").equals("00") ? PaymentStatus.PAID
+                : PaymentStatus.FAILED;
+        bookingClient.updateStatusToPaidAndRedisSeatIds(bookingId, status);
+        savePayment(transId, amount, bookingId, status, PaymentMethod.VNPAY, vnp_SecureHash);
     }
 }

@@ -16,3 +16,13 @@ momo:
   redirectUrl: https://your-site.com/payment/return
   ipnUrl: https://your-api.com/api/payments/ipn
   endpoint: https://test-payment.momo.vn/v2/gateway/api/create
+
+vnpay:
+  tmnCode: L25XQZLC
+  hashSecret: ${VNPAY_HASH_SECRET}
+  apiUrl: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  returnYrl: http://localhost:8088/api/payments/vn-pay-callback
+  # return_url: ${BACKEND_HOST}/api/payment/vn-pay-callback
+  version: 2.1.0
+  command: pay
+  orderType: other
