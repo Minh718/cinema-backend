@@ -10,10 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 
 import com.movie.paymentservice.configurations.MomoConfig;
 import com.movie.paymentservice.configurations.VNPayConfig;
+import com.movie.paymentservice.dtos.requests.BookingInfoReq;
 import com.movie.paymentservice.dtos.requests.CreatePaymentReq;
 import com.movie.paymentservice.dtos.requests.MomoCallback;
 import com.movie.paymentservice.dtos.requests.MomoPaymentReq;
@@ -41,6 +45,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final BookingClient bookingClient;
     private final MomoClient momoClient;
+    private final ObjectMapper ObjectMapper;
 
     public String createPayment(CreatePaymentReq request, HttpServletRequest httpServletRequest) {
         String urlPayment = switch (request.getPaymentMethod()) {
@@ -79,16 +84,17 @@ public class PaymentService {
         throw new RuntimeException("Failed to initiate MoMo payment");
     }
 
-    public void processMomoCallback(MomoCallback payload) {
+    public void processMomoCallback(MomoCallback payload) throws JsonMappingException, JsonProcessingException {
         if (!MomoUtil.verifySignature(payload, momoConfig.getAccessKey())) {
             throw new RuntimeException("Invalid MoMo signature");
         }
 
-        long bookingId = Long.parseLong(payload.getOrderInfo());
+        String json = payload.getOrderInfo();
+        BookingInfoReq info = ObjectMapper.readValue(json, BookingInfoReq.class);
         PaymentStatus status = payload.getResultCode() == 0 ? PaymentStatus.PAID : PaymentStatus.FAILED;
 
-        bookingClient.updateStatusToPaidAndRedisSeatIds(Long.valueOf(bookingId), status);
-        savePayment(payload.getTransId(), payload.getAmount(), bookingId, status, PaymentMethod.MOMO,
+        bookingClient.updateStatusToPaidAndRedisSeatIds(info.getBookingId(), status);
+        savePayment(payload.getTransId(), payload.getAmount(), info.getBookingId(), status, PaymentMethod.MOMO,
                 payload.getMessage());
     }
 

@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.movie.bookingservice.dtos.requests.BookingRequest;
 import com.movie.bookingservice.dtos.requests.CreatePaymentReq;
 import com.movie.bookingservice.dtos.responses.SeatResponse;
@@ -32,8 +34,9 @@ public class BookingService {
         private final CinemaClient cinemaClient;
         private final RedisService redisService;
         private final PaymentClient paymentClient;
+        private final ObjectMapper objectMapper;
 
-        public Booking createBooking(BookingRequest request) {
+        public Booking createBooking(BookingRequest request) throws JsonProcessingException {
                 Map<Long, String> validSeatMap = cinemaClient.getSeatsByRoomId(request.getRoomId())
                                 .getResult()
                                 .stream()
@@ -57,16 +60,17 @@ public class BookingService {
                 Booking booking = Booking.builder()
                                 .userId(request.getUserId())
                                 .showTimeId(request.getShowTimeId())
-                                .totalPrice(request.getTotalPrice())
+                                .totalPrice(request.getBookingInfoReq().getTotalPrice())
                                 .paymentStatus(PaymentStatus.UNPAID)
                                 .bookingStatus(BookingStatus.CONFIRMED)
                                 .build();
 
                 Booking savedBooking = bookingRepository.save(booking);
+                String orderInfo = objectMapper.writeValueAsString(request.getBookingInfoReq());
                 CreatePaymentReq createPaymentReq = CreatePaymentReq.builder()
-                                .amount(String.valueOf(request.getTotalPrice()))
+                                .amount(String.valueOf(request.getBookingInfoReq().getTotalPrice()))
                                 .paymentMethod(request.getPaymentMethod()).orderId(String.valueOf(savedBooking.getId()))
-                                .orderInfo(String.valueOf(savedBooking.getId())).build();
+                                .orderInfo(orderInfo).build();
                 String urlPayment = paymentClient.createPayment(createPaymentReq).getResult();
 
                 savedBooking.setUrlPayment(urlPayment);

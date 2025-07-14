@@ -8,7 +8,7 @@ import jakarta.persistence.Enumerated;
 import lombok.Data;
 
 @Data
-public class NotificationRequest {
+public class NotificationReq {
     private Long userId;
     private String title;
     private String to;

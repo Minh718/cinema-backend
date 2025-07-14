@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.movie.notificationservice.dtos.requests.NotificationRequest;
+import com.movie.notificationservice.dtos.requests.NotificationReq;
 import com.movie.notificationservice.dtos.responses.ApiRes;
 import com.movie.notificationservice.services.NotificationService;
 
@@ -20,7 +20,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @PostMapping
-    public ApiRes<String> send(@RequestBody NotificationRequest request) {
+    public ApiRes<String> send(@RequestBody NotificationReq request) {
         notificationService.sendNotification(request);
         return ApiRes.<String>builder().code(200).message("Success").build();
     }

@@ -4,7 +4,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.movie.notificationservice.dtos.requests.NotificationRequest;
+import com.movie.notificationservice.dtos.requests.NotificationReq;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,7 +18,7 @@ public class NotificationKafkaConsumer {
     @KafkaListener(topics = "notifications", groupId = "notification-group")
     public void listen(String message) {
         try {
-            NotificationRequest request = objectMapper.readValue(message, NotificationRequest.class);
+            NotificationReq request = objectMapper.readValue(message, NotificationReq.class);
             notificationService.sendNotification(request);
         } catch (Exception e) {
             e.printStackTrace();

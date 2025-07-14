@@ -7,11 +7,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.movie.bookingservice.dtos.requests.BookingRequest;
 import com.movie.bookingservice.dtos.responses.ApiRes;
 import com.movie.bookingservice.entities.Booking;
+import com.movie.bookingservice.enums.PaymentStatus;
 import com.movie.bookingservice.services.BookingService;
 
 import lombok.RequiredArgsConstructor;
@@ -42,5 +44,11 @@ public class BookingController {
         return ApiRes.<Set<Long>>builder().result(bookingService.getHeatSeatIds(showtimeId)).code(1000)
                 .message("get heat seats success")
                 .build();
+    }
+
+    @PostMapping("/bookings/internal/update-payment-status-and-redis-seat-ids")
+    public void updateStatusToPaidAndRedisSeatIds(@RequestParam("bookingId") Long bookingId,
+            @RequestParam PaymentStatus status) {
+        bookingService.updateStatusToPaidAndRedisSeatIds(bookingId, status);
     }
 }

@@ -8,10 +8,10 @@ import lombok.Data;
 
 @Data
 public class BookingRequest {
+    private BookingInfoReq bookingInfoReq;
+    private PaymentMethod paymentMethod;
     private Long userId;
     private Long showTimeId;
     private Long roomId;
-    private Double totalPrice;
-    private PaymentMethod paymentMethod;
     private Set<Long> seatIds;
 }
