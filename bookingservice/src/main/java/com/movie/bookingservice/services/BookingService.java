@@ -5,9 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.hibernate.metamodel.model.domain.internal.SetAttributeImpl;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.movie.bookingservice.dtos.requests.BookingRequest;
 import com.movie.bookingservice.dtos.requests.CreatePaymentReq;
@@ -15,7 +13,6 @@ import com.movie.bookingservice.dtos.responses.SeatResponse;
 import com.movie.bookingservice.entities.Booking;
 import com.movie.bookingservice.entities.BookingSeat;
 import com.movie.bookingservice.enums.BookingStatus;
-import com.movie.bookingservice.enums.PaymentMethod;
 import com.movie.bookingservice.enums.PaymentStatus;
 import com.movie.bookingservice.exceptions.CustomException;
 import com.movie.bookingservice.exceptions.ErrorCode;
@@ -74,9 +71,9 @@ public class BookingService {
 
                 savedBooking.setUrlPayment(urlPayment);
                 Booking updateBooking = bookingRepository.save(savedBooking);
-
                 redisService.addSet("payment:" + String.valueOf(updateBooking.getId()),
                                 request.getSeatIds().toArray(new Long[0]));
+                redisService.addSeats(redisKey, request.getSeatIds());
 
                 List<BookingSeat> bookingSeats = request.getSeatIds().stream()
                                 .map(seatId -> BookingSeat.builder()

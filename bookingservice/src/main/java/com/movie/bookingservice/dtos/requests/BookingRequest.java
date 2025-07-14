@@ -1,6 +1,6 @@
 package com.movie.bookingservice.dtos.requests;
 
-import java.util.List;
+import java.util.Set;
 
 import com.movie.bookingservice.enums.PaymentMethod;
 
@@ -13,5 +13,5 @@ public class BookingRequest {
     private Long roomId;
     private Double totalPrice;
     private PaymentMethod paymentMethod;
-    private List<Long> seatIds;
+    private Set<Long> seatIds;
 }

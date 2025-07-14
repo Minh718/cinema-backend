@@ -1,13 +1,10 @@
 package com.movie.cinemaservice.controllers;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.hibernate.annotations.Cache;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +21,6 @@ import com.movie.cinemaservice.dtos.responses.CinemaRes;
 import com.movie.cinemaservice.dtos.responses.SeatResponse;
 import com.movie.cinemaservice.entities.Cinema;
 import com.movie.cinemaservice.entities.Room;
-import com.movie.cinemaservice.entities.Seat;
 import com.movie.cinemaservice.services.CinemaService;
 import com.movie.cinemaservice.services.RoomService;
 
@@ -64,4 +60,5 @@ public class CinemaController {
         List<CinemaRes> seats = cinemaService.getAllCinemas();
         return ApiRes.<List<CinemaRes>>builder().code(200).message("Success").result(seats).build();
     }
+
 }

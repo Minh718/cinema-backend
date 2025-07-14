@@ -105,6 +105,10 @@ public class RedisService {
         redisTemplate.opsForSet().add(key, value);
     }
 
+    public void setWithTTL(String key, Object value, long ttl, TimeUnit unit) {
+        redisTemplate.opsForValue().set(key, value, ttl, unit);
+    }
+
     public Set<Long> getSeatIds(String redisKey) {
         Set<Object> rawSet = redisTemplate.opsForSet().members(redisKey);
         if (rawSet == null)
@@ -116,7 +120,11 @@ public class RedisService {
                 .collect(Collectors.toSet());
     }
 
-    public void removeHeatSeats(String redisKey, List<Long> seatIds) {
+    public void removeSeats(String redisKey, Set<Long> seatIds) {
         redisTemplate.opsForSet().remove(redisKey, seatIds.toArray());
+    }
+
+    public void addSeats(String redisKey, Set<Long> seatIds) {
+        redisTemplate.opsForSet().add(redisKey, seatIds.toArray());
     }
 }
