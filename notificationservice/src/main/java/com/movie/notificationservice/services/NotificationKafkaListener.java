@@ -3,25 +3,22 @@ package com.movie.notificationservice.services;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.movie.notificationservice.dtos.requests.NotificationReq;
+import com.movie.notificationservice.dtos.requests.NotificationEvent;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class NotificationKafkaConsumer {
+public class NotificationKafkaListener {
 
-    private final ObjectMapper objectMapper;
     private final NotificationService notificationService;
 
     @KafkaListener(topics = "notifications", groupId = "notification-group")
-    public void listen(String message) {
+    public void listen(NotificationEvent event) {
         try {
-            NotificationReq request = objectMapper.readValue(message, NotificationReq.class);
-            notificationService.sendNotification(request);
+            notificationService.sendNotification(event);
         } catch (Exception e) {
-            e.printStackTrace();
+            // log.error("Error while processing Kafka notification", e);
         }
     }
 }

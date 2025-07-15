@@ -1,5 +1,6 @@
-package com.movie.paymentservice.dtos.requests;
+package com.movie.paymentservice.events.models;
 
+import com.movie.paymentservice.dtos.requests.EmailTemplateInfo;
 import com.movie.paymentservice.enums.TypeNotification;
 
 import jakarta.persistence.EnumType;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationReq {
+public class NotificationEvent {
     private Long userId;
     private String title;
     private String to;

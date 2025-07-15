@@ -5,10 +5,14 @@ import com.movie.notificationservice.enums.TypeNotification;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class NotificationReq {
+@AllArgsConstructor
+@NoArgsConstructor
+public class NotificationEvent {
     private Long userId;
     private String title;
     private String to;

@@ -1,6 +1,5 @@
 package com.movie.paymentservice.services;
 
-import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -10,11 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.stereotype.Service;
-
 import com.movie.paymentservice.configurations.MomoConfig;
 import com.movie.paymentservice.configurations.VNPayConfig;
 import com.movie.paymentservice.dtos.requests.BookingInfoReq;
@@ -22,12 +21,15 @@ import com.movie.paymentservice.dtos.requests.CreatePaymentReq;
 import com.movie.paymentservice.dtos.requests.EmailTemplateInfo;
 import com.movie.paymentservice.dtos.requests.MomoCallback;
 import com.movie.paymentservice.dtos.requests.MomoPaymentReq;
-import com.movie.paymentservice.dtos.requests.NotificationReq;
 import com.movie.paymentservice.dtos.responses.MomoPaymentRes;
 import com.movie.paymentservice.entities.Payment;
 import com.movie.paymentservice.enums.MailType;
 import com.movie.paymentservice.enums.PaymentMethod;
 import com.movie.paymentservice.enums.PaymentStatus;
+import com.movie.paymentservice.events.models.NotificationEvent;
+import com.movie.paymentservice.events.models.PaymentCompletedEvent;
+import com.movie.paymentservice.events.publishers.NotificationKafkaPublisher;
+import com.movie.paymentservice.events.publishers.PaymentEventPublisher;
 import com.movie.paymentservice.repositories.PaymentRepository;
 import com.movie.paymentservice.repositories.httpClients.BookingClient;
 import com.movie.paymentservice.repositories.httpClients.MomoClient;
@@ -49,7 +51,8 @@ public class PaymentService {
     private final BookingClient bookingClient;
     private final MomoClient momoClient;
     private final ObjectMapper ObjectMapper;
-    private final NotificationKafkaProducer notificationKafkaProducer;
+    private final NotificationKafkaPublisher notificationKafkaPublisher;
+    private final PaymentEventPublisher paymentEventPublisher;
 
     public String createPayment(CreatePaymentReq request, HttpServletRequest httpServletRequest) {
         String urlPayment = switch (request.getPaymentMethod()) {
@@ -131,7 +134,8 @@ public class PaymentService {
 
     private void processBookingAndPayment(BookingInfoReq bookingInfo, String transId, long amount,
             PaymentStatus status, PaymentMethod method, String message) {
-        bookingClient.updateStatusToPaidAndRedisSeatIds(bookingInfo.getBookingId(), status);
+        paymentEventPublisher
+                .publishPaymentCompletedEvent(new PaymentCompletedEvent(bookingInfo.getBookingId(), status));
 
         Payment payment = Payment.builder()
                 .bookingId(bookingInfo.getBookingId())
@@ -144,12 +148,12 @@ public class PaymentService {
         paymentRepository.save(payment);
 
         EmailTemplateInfo emailTemplate = new EmailTemplateInfo(MailType.BOOKING_CONFIRMATION, bookingInfo.toMap());
-        NotificationReq notification = NotificationReq.builder()
+        NotificationEvent event = NotificationEvent.builder()
                 .to(bookingInfo.getEmail())
                 .emailTemplate(emailTemplate)
                 .build();
         if (status == PaymentStatus.PAID)
-            notificationKafkaProducer.sendNotification(notification);
+            notificationKafkaPublisher.pubishNotificationEvent(event);
     }
 
     public String createVnPayPayment(HttpServletRequest request, double amount, String orderInfo) {

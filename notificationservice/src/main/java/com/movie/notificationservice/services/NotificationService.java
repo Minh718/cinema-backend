@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 
-import com.movie.notificationservice.dtos.requests.NotificationReq;
+import com.movie.notificationservice.dtos.requests.NotificationEvent;
 import com.movie.notificationservice.entities.Notification;
 import com.movie.notificationservice.enums.TypeNotification;
 import com.movie.notificationservice.repositories.NotificationRepository;
@@ -19,7 +19,7 @@ public class NotificationService {
     private final FirebaseService firebaseService; // optional stub
     private final EmailService htmlMailService; // optional stub
 
-    public void sendNotification(NotificationReq request) {
+    public void sendNotification(NotificationEvent request) {
         boolean sent = false;
 
         switch (request.getType()) {

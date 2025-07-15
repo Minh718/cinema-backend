@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.movie.bookingservice.dtos.requests.BookingRequest;
 import com.movie.bookingservice.dtos.responses.ApiRes;
 import com.movie.bookingservice.entities.Booking;
@@ -26,7 +27,7 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public ApiRes<Booking> createBooking(@RequestBody BookingRequest request) {
+    public ApiRes<Booking> createBooking(@RequestBody BookingRequest request) throws JsonProcessingException {
         return ApiRes.<Booking>builder().result(bookingService.createBooking(request)).code(1000)
                 .message("Booking success")
                 .build();
@@ -44,11 +45,5 @@ public class BookingController {
         return ApiRes.<Set<Long>>builder().result(bookingService.getHeatSeatIds(showtimeId)).code(1000)
                 .message("get heat seats success")
                 .build();
-    }
-
-    @PostMapping("/bookings/internal/update-payment-status-and-redis-seat-ids")
-    public void updateStatusToPaidAndRedisSeatIds(@RequestParam("bookingId") Long bookingId,
-            @RequestParam PaymentStatus status) {
-        bookingService.updateStatusToPaidAndRedisSeatIds(bookingId, status);
     }
 }
