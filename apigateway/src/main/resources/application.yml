@@ -24,10 +24,10 @@ spring:
               filters:
                 - StripPrefix=1
 
-            - id: auth-service
-              uri: lb://auth-service
+            - id: seat-service
+              uri: lb://seat-service
               predicates:
-                - Path=/api/auth/**
+                - Path=/api/seats/**
               filters:
                 - StripPrefix=1
 

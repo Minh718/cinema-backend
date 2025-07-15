@@ -59,6 +59,7 @@
         <module>paymentservice</module>
         <module>cinemaservice</module>
         <module>showtimeservice</module>
+        <module>seatservice</module>
         <!-- Add more modules as needed -->
     </modules>
 </project>

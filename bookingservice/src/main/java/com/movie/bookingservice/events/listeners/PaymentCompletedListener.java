@@ -17,6 +17,7 @@ public class PaymentCompletedListener {
 
     @KafkaListener(topics = "payment.completed", groupId = "booking-service")
     public void listen(PaymentCompletedEvent event) throws JsonProcessingException {
-        bookingService.updateStatusToPaidAndRedisSeatIds(event.getBookingId(), event.getStatus());
+        bookingService.updateStatusBooking(event.getBookingId(),
+                event.getStatus());
     }
 }

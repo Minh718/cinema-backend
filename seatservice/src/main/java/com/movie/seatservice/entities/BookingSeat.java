@@ -1,4 +1,4 @@
-package com.movie.bookingservice.entities;
+package com.movie.seatservice.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,8 +23,6 @@ public class BookingSeat {
 
     private Long seatId;
     private String seatCode;
+    private Long bookingId;
 
-    @ManyToOne
-    @JoinColumn(name = "booking_id")
-    private Booking booking;
 }
