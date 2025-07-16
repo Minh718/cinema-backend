@@ -17,6 +17,7 @@ import com.movie.bookingservice.entities.Booking;
 import com.movie.bookingservice.enums.PaymentStatus;
 import com.movie.bookingservice.services.BookingService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,9 +28,19 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public ApiRes<Booking> createBooking(@RequestBody BookingRequest request) throws JsonProcessingException {
-        return ApiRes.<Booking>builder().result(bookingService.createBooking(request)).code(1000)
+    public ApiRes<Booking> createBooking(@RequestBody BookingRequest request, HttpServletRequest httpServletRequest)
+            throws JsonProcessingException {
+        String clientIp = getClientIpAddress(httpServletRequest);
+        return ApiRes.<Booking>builder().result(bookingService.createBooking(request, clientIp)).code(1000)
                 .message("Booking success")
                 .build();
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isEmpty()) {
+            return forwarded.split(",")[0];
+        }
+        return request.getRemoteAddr();
     }
 }

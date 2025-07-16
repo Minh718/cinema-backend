@@ -1,5 +1,6 @@
 package com.movie.bookingservice.services;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,10 @@ public class RedisService {
 
     public void setKeyinMinutes(String key, Object value, int MINUTES) {
         redisTemplate.opsForValue().set(key, value, MINUTES, TimeUnit.MINUTES);
+    }
+
+    public void setKeyinDuration(String key, Object value, Duration duration) {
+        redisTemplate.opsForValue().set(key, value, duration);
     }
 
     public void setKey(String key, Object value) {

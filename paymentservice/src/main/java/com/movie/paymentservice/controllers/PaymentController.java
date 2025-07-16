@@ -12,15 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.movie.paymentservice.dtos.requests.CreatePaymentReq;
 import com.movie.paymentservice.dtos.requests.MomoCallback;
-import lombok.experimental.NonFinal;
 import com.movie.paymentservice.dtos.responses.ApiRes;
 import com.movie.paymentservice.services.PaymentService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.NonFinal;
 
 @RestController
 @RequestMapping("/payments")
@@ -32,11 +30,13 @@ public class PaymentController {
     @Value("${frontend_host:http://localhost:3000}")
     private String frontend_host;
 
-    @PostMapping("/create")
-    public ApiRes<String> createPayment(@RequestBody CreatePaymentReq request, HttpServletRequest httpServletRequest) {
-        String response = paymentService.createPayment(request, httpServletRequest);
-        return ApiRes.<String>builder().code(200).message("Success").result(response).build();
-    }
+    // @PostMapping("/create")
+    // public ApiRes<String> createPayment(@RequestBody CreatePaymentReq request,
+    // HttpServletRequest httpServletRequest) {
+    // String response = paymentService.createPayment(request, httpServletRequest);
+    // return
+    // ApiRes.<String>builder().code(200).message("Success").result(response).build();
+    // }
 
     @PostMapping("/ipn")
     public ApiRes<String> handleMomoNotify(@RequestBody MomoCallback payload) {

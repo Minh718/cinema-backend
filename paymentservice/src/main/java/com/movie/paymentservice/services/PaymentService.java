@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.movie.paymentservice.configurations.MomoConfig;
 import com.movie.paymentservice.configurations.VNPayConfig;
 import com.movie.paymentservice.dtos.requests.BookingInfoReq;
-import com.movie.paymentservice.dtos.requests.CreatePaymentReq;
 import com.movie.paymentservice.dtos.requests.EmailTemplateInfo;
 import com.movie.paymentservice.dtos.requests.MomoCallback;
 import com.movie.paymentservice.dtos.requests.MomoPaymentReq;
@@ -27,6 +26,7 @@ import com.movie.paymentservice.entities.Payment;
 import com.movie.paymentservice.enums.MailType;
 import com.movie.paymentservice.enums.PaymentMethod;
 import com.movie.paymentservice.enums.PaymentStatus;
+import com.movie.paymentservice.events.models.BookingCreatedEvent;
 import com.movie.paymentservice.events.models.NotificationEvent;
 import com.movie.paymentservice.events.models.PaymentCompletedEvent;
 import com.movie.paymentservice.events.models.PaymentFailedEvent;
@@ -56,11 +56,11 @@ public class PaymentService {
     private final NotificationKafkaPublisher notificationKafkaPublisher;
     private final PaymentEventPublisher paymentEventPublisher;
 
-    public String createPayment(CreatePaymentReq request, HttpServletRequest httpServletRequest) {
+    public String createPayment(BookingCreatedEvent request) {
         String urlPayment = switch (request.getPaymentMethod()) {
             case MOMO -> createMomoPayment(request.getOrderId(), request.getAmount(), request.getOrderInfo());
             case VNPAY ->
-                createVnPayPayment(httpServletRequest, Double.valueOf(request.getAmount()), request.getOrderInfo());
+                createVnPayPayment(request.getClientIp(), Double.valueOf(request.getAmount()), request.getOrderInfo());
             default -> null;
         };
         return urlPayment;
@@ -169,7 +169,7 @@ public class PaymentService {
             notificationKafkaPublisher.pubishNotificationEvent(event);
     }
 
-    public String createVnPayPayment(HttpServletRequest request, double amount, String orderInfo) {
+    public String createVnPayPayment(String clientId, double amount, String orderInfo) {
         Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig();
 
         double exchangeRate = 25000d;
@@ -178,7 +178,7 @@ public class PaymentService {
 
         vnpParamsMap.put("vnp_Amount", String.valueOf(vnpAmount));
         vnpParamsMap.put("vnp_OrderInfo", orderInfo);
-        vnpParamsMap.put("vnp_IpAddr", VNPayUtil.getIpAddress(request));
+        vnpParamsMap.put("vnp_IpAddr", clientId);
 
         List<String> fieldNames = new ArrayList<>(vnpParamsMap.keySet());
         Collections.sort(fieldNames);

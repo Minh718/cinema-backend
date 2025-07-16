@@ -27,7 +27,7 @@ public class BookCreatedListener {
         try {
             seatService.validateAndLockSeats(event);
             kafkaTemplate.send(KafkaTopics.SEAT_LOCKED,
-                    new SeatLockedEvent(event.getBookingId(), "success", Instant.now()));
+                    new SeatLockedEvent(event.getBookingId(), "success", Instant.now()).setSeatIds(event.getSeatIds()));
         } catch (Exception e) {
             kafkaTemplate.send(KafkaTopics.SEAT_LOCK_FAILED,
                     new SeatLockFailedEvent(event.getBookingId(), e.getMessage(), Instant.now()));

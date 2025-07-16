@@ -35,7 +35,7 @@ public class BookingService {
         private final PaymentClient paymentClient;
         private final ObjectMapper objectMapper;
 
-        public Booking createBooking(BookingRequest request) throws JsonProcessingException {
+        public Booking createBooking(BookingRequest request, String clientIp) throws JsonProcessingException {
                 Booking booking = Booking.builder()
                                 .userId(request.getUserId())
                                 .showTimeId(request.getShowTimeId())
@@ -45,38 +45,25 @@ public class BookingService {
                                 .build();
 
                 Booking savedBooking = bookingRepository.save(booking);
+                String orderInfo = objectMapper.writeValueAsString(request.getBookingInfoReq());
                 BookingCreatedEvent event = BookingCreatedEvent.builder().roomId(request.getRoomId())
                                 .showTimeId(request.getShowTimeId()).bookingId(booking.getId())
-                                .seatIds(request.getSeatIds()).build();
-                bookingEventPublisher.publishBookingCreatedEvent(event);
-
-                String orderInfo = objectMapper.writeValueAsString(request.getBookingInfoReq());
-                CreatePaymentReq createPaymentReq = CreatePaymentReq.builder()
+                                .seatIds(request.getSeatIds())
                                 .amount(String.valueOf(request.getBookingInfoReq().getTotalPrice()))
                                 .paymentMethod(request.getPaymentMethod()).orderId(String.valueOf(savedBooking.getId()))
                                 .orderInfo(orderInfo).build();
-                String urlPayment = paymentClient.createPayment(createPaymentReq).getResult();
+                bookingEventPublisher.publishBookingCreatedEvent(event);
 
-                savedBooking.setUrlPayment(urlPayment);
-                Booking updateBooking = bookingRepository.save(savedBooking);
-                return updateBooking;
+                return savedBooking;
         }
 
-        public void updateStatusBookingWhenPaymentCompleted(Long bookingId)
+        public void updateBookingStatusAndPaymentStatus(Long bookingId, BookingStatus bookingStatus,
+                        PaymentStatus paymentStatus)
                         throws JsonProcessingException {
                 Booking booking = bookingRepository.findById(bookingId)
                                 .orElseThrow(() -> new CustomException(ErrorCode.BOOKING_NOT_FOUND));
-                booking.setPaymentStatus(PaymentStatus.PAID);
-                booking.setBookingStatus(BookingStatus.CONFIRMED);
-                bookingRepository.save(booking);
-        }
-
-        public void updateStatusBookingWhenPaymentFailed(Long bookingId)
-                        throws JsonProcessingException {
-                Booking booking = bookingRepository.findById(bookingId)
-                                .orElseThrow(() -> new CustomException(ErrorCode.BOOKING_NOT_FOUND));
-                booking.setPaymentStatus(PaymentStatus.FAILED);
-                booking.setBookingStatus(BookingStatus.FAILED);
+                booking.setPaymentStatus(paymentStatus);
+                booking.setBookingStatus(bookingStatus);
                 bookingRepository.save(booking);
         }
 }
