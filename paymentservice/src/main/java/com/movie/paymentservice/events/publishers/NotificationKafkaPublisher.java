@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.movie.paymentservice.constants.KafkaTopics;
 import com.movie.paymentservice.events.models.NotificationEvent;
 
 import lombok.RequiredArgsConstructor;
@@ -17,10 +18,8 @@ public class NotificationKafkaPublisher {
 
     private final KafkaTemplate<String, NotificationEvent> kafkaTemplate;
 
-    private static final String TOPIC = "notifications";
-
     public void pubishNotificationEvent(NotificationEvent event) {
-        kafkaTemplate.send(TOPIC, event);
+        kafkaTemplate.send(KafkaTopics.NOTIFICATIONS, event);
         log.info(" Sent notification to Kafka: {}", event);
 
     }

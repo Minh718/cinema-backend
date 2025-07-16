@@ -62,22 +62,21 @@ public class BookingService {
                 return updateBooking;
         }
 
-        public void updateStatusBooking(Long bookingId, PaymentStatus status)
+        public void updateStatusBookingWhenPaymentCompleted(Long bookingId)
                         throws JsonProcessingException {
                 Booking booking = bookingRepository.findById(bookingId)
                                 .orElseThrow(() -> new CustomException(ErrorCode.BOOKING_NOT_FOUND));
-                booking.setPaymentStatus(status);
+                booking.setPaymentStatus(PaymentStatus.PAID);
+                booking.setBookingStatus(BookingStatus.CONFIRMED);
                 bookingRepository.save(booking);
-                if (status == PaymentStatus.PAID) {
-                        String redisKey = "payment:" + String.valueOf(bookingId);
-                        redisService.delKey(redisKey);
-                } else {
-                        String keyUnpaidSeats = "payment:" + booking.getId();
-                        String keyBookedSeats = "showtime:" + booking.getShowTimeId() + ":booked-seats";
+        }
 
-                        Set<Long> unpaidSeats = redisService.getSeatIds(keyUnpaidSeats);
-                        redisService.delKey(keyUnpaidSeats);
-                        redisService.removeSeats(keyBookedSeats, unpaidSeats);
-                }
+        public void updateStatusBookingWhenPaymentFailed(Long bookingId)
+                        throws JsonProcessingException {
+                Booking booking = bookingRepository.findById(bookingId)
+                                .orElseThrow(() -> new CustomException(ErrorCode.BOOKING_NOT_FOUND));
+                booking.setPaymentStatus(PaymentStatus.FAILED);
+                booking.setBookingStatus(BookingStatus.FAILED);
+                bookingRepository.save(booking);
         }
 }

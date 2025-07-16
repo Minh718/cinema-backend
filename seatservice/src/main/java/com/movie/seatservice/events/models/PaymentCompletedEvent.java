@@ -1,8 +1,6 @@
-package com.movie.bookingservice.events.models;
+package com.movie.seatservice.events.models;
 
 import java.time.Instant;
-
-import com.movie.bookingservice.enums.PaymentStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

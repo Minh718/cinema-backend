@@ -2,6 +2,7 @@ package com.movie.paymentservice.services;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -28,6 +29,7 @@ import com.movie.paymentservice.enums.PaymentMethod;
 import com.movie.paymentservice.enums.PaymentStatus;
 import com.movie.paymentservice.events.models.NotificationEvent;
 import com.movie.paymentservice.events.models.PaymentCompletedEvent;
+import com.movie.paymentservice.events.models.PaymentFailedEvent;
 import com.movie.paymentservice.events.publishers.NotificationKafkaPublisher;
 import com.movie.paymentservice.events.publishers.PaymentEventPublisher;
 import com.movie.paymentservice.repositories.PaymentRepository;
@@ -134,8 +136,19 @@ public class PaymentService {
 
     private void processBookingAndPayment(BookingInfoReq bookingInfo, String transId, long amount,
             PaymentStatus status, PaymentMethod method, String message) {
-        paymentEventPublisher
-                .publishPaymentCompletedEvent(new PaymentCompletedEvent(bookingInfo.getBookingId(), status));
+        if (status == PaymentStatus.PAID) {
+            paymentEventPublisher.publishPaymentCompletedEvent(
+                    new PaymentCompletedEvent(
+                            bookingInfo.getBookingId(),
+                            "Payment successful ",
+                            Instant.now()));
+        } else {
+            paymentEventPublisher.publishPaymentFailedEvent(
+                    new PaymentFailedEvent(
+                            bookingInfo.getBookingId(),
+                            "Payment failed ",
+                            Instant.now()));
+        }
 
         Payment payment = Payment.builder()
                 .bookingId(bookingInfo.getBookingId())

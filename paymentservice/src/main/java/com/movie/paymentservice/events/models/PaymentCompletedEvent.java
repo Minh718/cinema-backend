@@ -1,5 +1,7 @@
 package com.movie.paymentservice.events.models;
 
+import java.time.Instant;
+
 import com.movie.paymentservice.enums.PaymentStatus;
 
 import lombok.AllArgsConstructor;
@@ -11,5 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PaymentCompletedEvent {
     private Long bookingId;
-    private PaymentStatus status;
+    private String message;
+    private Instant timestamp;
 }

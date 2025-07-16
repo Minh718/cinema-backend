@@ -27,19 +27,19 @@ public class SeatService {
     private final BookingSeatRepository bookingSeatRepository;
 
     public Set<Long> getBookedSeatIds(Long showTimeId) {
-        String redisKey = "showtime:" + showTimeId + ":booked-seats";
+        String redisKey = getShowtimeBookedSeatsKey(String.valueOf(showTimeId));
         return redisService.getSeatIds(redisKey);
     }
 
     public Set<Long> getHeatSeatIds(Long showTimeId) {
-        String redisKey = "showtime:" + showTimeId + ":heat-seats";
+        String redisKey = getShowtimeHeatSeatsKey(String.valueOf(showTimeId));
         return redisService.getSeatIds(redisKey);
     }
 
     public void validateAndLockSeats(BookingCreatedEvent event) {
         Long bookingId = event.getBookingId();
         Long showTimeId = event.getShowTimeId();
-        String redisKey = "showtime:" + showTimeId + ":booked-seats";
+        String redisKey = getShowtimeBookedSeatsKey(String.valueOf(showTimeId));
 
         Map<Long, String> validSeatMap = cinemaClient.getSeatsByRoomId(event.getRoomId())
                 .getResult()
@@ -63,9 +63,9 @@ public class SeatService {
             throw new CustomException(ErrorCode.SEAT_BOOKING_FAILED);
         }
 
-        redisService.setWithTTL("booking:" + bookingId + ":seats", event.getSeatIds().toArray(Long[]::new), 15,
+        redisService.setWithTTL(getUnpaidSeatsKey(bookingId), event.getSeatIds().toArray(Long[]::new), 15,
                 TimeUnit.MINUTES);
-        redisService.setKeyinMinutes("booking:" + bookingId + ":showTimeId", showTimeId, 15);
+        redisService.setKeyinMinutes(getBookingShowTimeKey(bookingId), showTimeId, 15);
 
         redisService.addSeats(redisKey, event.getSeatIds());
 
@@ -78,5 +78,37 @@ public class SeatService {
                 .toList();
 
         bookingSeatRepository.saveAll(bookingSeats);
+    }
+
+    public void processingWhenPaymentCompleted(Long bookingId) {
+        String redisKey = getUnpaidSeatsKey(bookingId);
+        ;
+        redisService.delKey(redisKey);
+    }
+
+    public void processingWhenPaymentFailed(Long bookingId) {
+        String keyUnpaidSeats = getUnpaidSeatsKey(bookingId);
+        String showTimeId = redisService.getKey(getBookingShowTimeKey(bookingId)).toString();
+        String keyBookedSeats = getShowtimeBookedSeatsKey(showTimeId);
+
+        Set<Long> unpaidSeats = redisService.getSeatIds(keyUnpaidSeats);
+        redisService.delKey(keyUnpaidSeats);
+        redisService.removeSeats(keyBookedSeats, unpaidSeats);
+    }
+
+    private String getUnpaidSeatsKey(Long bookingId) {
+        return "payment:" + bookingId + ":seats";
+    }
+
+    private String getBookingShowTimeKey(Long bookingId) {
+        return "booking:" + bookingId + ":showTimeId";
+    }
+
+    private String getShowtimeBookedSeatsKey(String showTimeId) {
+        return "showtime:" + showTimeId + ":booked-seats";
+    }
+
+    private String getShowtimeHeatSeatsKey(String showTimeId) {
+        return "showtime:" + showTimeId + ":heat-seats";
     }
 }
