@@ -72,6 +72,13 @@ spring:
                 - Path=/api/notifications/**
               filters:
                 - StripPrefix=1
+                
+            - id: heatseat-ws
+              uri: lb://heatseat-service
+              predicates:
+                - Path=/ws/heatseat/**
+              filters:
+                - StripPrefix=1
     globalcors:
       corsConfigurations:
         "[/**]":
