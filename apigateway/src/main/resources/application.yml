@@ -73,8 +73,15 @@ spring:
               filters:
                 - StripPrefix=1
                 
-            - id: heatseat-ws
+            - id: heatseat-service-rest
               uri: lb://heatseat-service
+              predicates:
+                - Path=/api/heatseats/**
+              filters:
+                - StripPrefix=1
+
+            - id: heatseat-service-ws
+              uri: lb:ws://heatseat-service
               predicates:
                 - Path=/ws/heatseat/**
               filters:
