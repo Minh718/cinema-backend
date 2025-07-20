@@ -18,6 +18,7 @@ import com.movie.cinemaservice.dtos.requests.CinemaCreateReq;
 import com.movie.cinemaservice.dtos.requests.RoomCreateReq;
 import com.movie.cinemaservice.dtos.responses.ApiRes;
 import com.movie.cinemaservice.dtos.responses.CinemaRes;
+import com.movie.cinemaservice.dtos.responses.RoomDetailRes;
 import com.movie.cinemaservice.dtos.responses.SeatResponse;
 import com.movie.cinemaservice.entities.Cinema;
 import com.movie.cinemaservice.entities.Room;
@@ -55,4 +56,10 @@ public class CinemaController {
         return ApiRes.<List<CinemaRes>>builder().code(200).message("Success").result(seats).build();
     }
 
+    @Cacheable(value = "getDetailRoom", key = "#roomId")
+    @GetMapping("/{roomId}/room")
+    public ApiRes<RoomDetailRes> getDetailRoom(@PathVariable Long roomId) {
+        RoomDetailRes room = roomService.getRoomDetail(roomId);
+        return ApiRes.<RoomDetailRes>builder().code(200).message("Success").result(room).build();
+    }
 }

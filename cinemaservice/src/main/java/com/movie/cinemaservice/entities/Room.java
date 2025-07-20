@@ -8,10 +8,13 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -31,8 +34,6 @@ public class Room {
     private Integer numberOfRows;
 
     private Integer seatsPerRow;
-
-    private String location;
 
     private String screenType;
 

@@ -9,6 +9,7 @@ import lombok.Getter;
 public enum ErrorCode {
     BAD_REQUEST(1000, "Bad request", HttpStatus.BAD_REQUEST),
     CINEMA_NOT_FOUND(1001, "Cinema not found", HttpStatus.BAD_REQUEST),
+    ROOM_NOT_FOUND(1002, "Room not found", HttpStatus.BAD_REQUEST),
     QUANTITY_NOT_ENOUGH(1047, "Quantity not enough", HttpStatus.BAD_REQUEST);
 
     ErrorCode(

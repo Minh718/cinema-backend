@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.movie.cinemaservice.dtos.requests.RoomCreateReq;
+import com.movie.cinemaservice.dtos.responses.RoomDetailRes;
 import com.movie.cinemaservice.dtos.responses.SeatResponse;
 import com.movie.cinemaservice.entities.Cinema;
 import com.movie.cinemaservice.entities.Room;
@@ -43,6 +44,7 @@ public class RoomService {
                 String code = rowLetter + String.valueOf(seatNum);
                 Seat seat = Seat.builder()
                         .code(code)
+                        .row(row + 1)
                         .room(savedRoom)
                         .build();
                 seats.add(seat);
@@ -61,5 +63,11 @@ public class RoomService {
         return seats.stream()
                 .map(seat -> new SeatResponse(seat.getId(), seat.getCode()))
                 .toList();
+    }
+
+    public RoomDetailRes getRoomDetail(Long roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new CustomException(ErrorCode.ROOM_NOT_FOUND));
+        return RoomMapper.INSTANCE.toRoomDetailRes(room);
     }
 }
