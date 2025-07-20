@@ -1,7 +1,9 @@
 package com.movie.showtimeservice.repositories;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -31,4 +33,10 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
                         "AND s.status = :status " +
                         "AND s.date >= CURRENT_DATE")
         List<Long> findNowShowingMovieIdsByCinemaId(@Param("cinemaId") Long cinemaId, ShowTimeStatus status);
+
+        @Query("SELECT s FROM ShowTime s WHERE s.id = :id AND " +
+                        "((s.date > :currentDate) OR (s.date = :currentDate AND s.startTime > :currentTime))")
+        Optional<ShowTime> findBookableShowTimeById(@Param("id") Long id,
+                        @Param("currentDate") LocalDate currentDate,
+                        @Param("currentTime") LocalTime currentTime);
 }

@@ -2,6 +2,7 @@ package com.movie.movieservice.controllers;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,6 +20,7 @@ import com.movie.movieservice.dtos.responses.ApiMetaRes;
 import com.movie.movieservice.dtos.responses.ApiRes;
 import com.movie.movieservice.dtos.responses.HomepageMovieRes;
 import com.movie.movieservice.dtos.responses.MetadataDTO;
+import com.movie.movieservice.dtos.responses.MovieDetailRes;
 import com.movie.movieservice.entities.Movie;
 import com.movie.movieservice.enums.MovieStatus;
 import com.movie.movieservice.services.MovieService;
@@ -42,19 +44,19 @@ public class MovieController {
                 .result(movieService.updateExistingMovie(id, moviedto)).build();
     }
 
-    @PutMapping("/admin/{id}/status")
-    public ApiRes<Movie> updateMovieStatus(
-            @PathVariable("id") Long id,
-            @RequestParam("status") MovieStatus status) {
+    // @PutMapping("/admin/{id}/status")
+    // public ApiRes<Movie> updateMovieStatus(
+    // @PathVariable("id") Long id,
+    // @RequestParam("status") MovieStatus status) {
 
-        Movie updatedMovie = movieService.updateMovieStatus(id, status);
+    // Movie updatedMovie = movieService.updateMovieStatus(id, status);
 
-        ApiRes.<Movie>builder()
-                .code(200)
-                .message("Success")
-                .result(updatedMovie)
-                .build();
-    }
+    // ApiRes.<Movie>builder()
+    // .code(200)
+    // .message("Success")
+    // .result(updatedMovie)
+    // .build();
+    // }
 
     @DeleteMapping("/admin/{id}")
     public ApiRes<Movie> deleteMovie(@RequestBody MovieRequestDto moviedto) {
@@ -100,7 +102,8 @@ public class MovieController {
     }
 
     @GetMapping("/public/{id}")
-    public ApiRes<Movie> getMovieDetail(@PathVariable("id") Long id) {
-        return ApiRes.<Movie>builder().code(200).result(movieService.getMovieDetail(id)).message("success").build();
+    public ApiRes<MovieDetailRes> getMovieDetail(@PathVariable("id") Long id) {
+        return ApiRes.<MovieDetailRes>builder().code(200).result(movieService.getMovieDetail(id)).message("success")
+                .build();
     }
 }

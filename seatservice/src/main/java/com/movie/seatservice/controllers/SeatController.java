@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/seats")
 @RequiredArgsConstructor
-public class BookingController {
+public class SeatController {
 
     private final SeatService seatService;
 

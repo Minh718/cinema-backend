@@ -13,8 +13,6 @@ import lombok.NoArgsConstructor;
 public class SeatLockedEvent {
     private Long bookingId;
     private String message;
-    private Set<Long> seatIds; // Requested seat IDs
-
     private Instant timestamp;
     // getters/setters
 }

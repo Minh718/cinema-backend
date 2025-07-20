@@ -5,12 +5,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import com.movie.bookingservice.dtos.responses.ApiRes;
-import com.movie.bookingservice.dtos.responses.CinemaRes;
+import com.movie.bookingservice.dtos.responses.ShowTimeRes;
 
-import jakarta.persistence.Cacheable;
+@FeignClient(name = "showtime-service")
+public interface ShowTimeClient {
 
-@FeignClient(name = "cinema-service")
-public interface CinemaClient {
-    @GetMapping("/{cinemaId}")
-    public ApiRes<CinemaRes> getDetailCinema(@PathVariable Long cinemaId);
+    @GetMapping("internal/showtimes/{id}/bookable")
+    public ApiRes<ShowTimeRes> checkShowTimeAvailable(@PathVariable Long id);
 }

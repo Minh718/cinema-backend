@@ -1,8 +1,10 @@
 package com.movie.movieservice.services;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -10,6 +12,8 @@ import org.springframework.stereotype.Service;
 
 import com.movie.movieservice.dtos.requests.MovieRequestDto;
 import com.movie.movieservice.dtos.responses.HomepageMovieRes;
+import com.movie.movieservice.dtos.responses.MovieDetailRes;
+import com.movie.movieservice.dtos.responses.MovieNameRes;
 import com.movie.movieservice.entities.Movie;
 import com.movie.movieservice.enums.MovieStatus;
 import com.movie.movieservice.exceptions.CustomException;
@@ -18,12 +22,7 @@ import com.movie.movieservice.mappers.MovieMapper;
 import com.movie.movieservice.repositories.MovieRepository;
 import com.movie.movieservice.repositories.httpClients.ShowTimeClient;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -53,9 +52,16 @@ public class MovieService {
         return showTimeClient.getNowShowingMovieIdsByCinema(cinemaId);
     }
 
-    public Movie getMovieDetail(Long id) {
-        Optional<Movie> movie = movieRepository.findById(id);
-        return movie.orElse(null);
+    public MovieDetailRes getMovieDetail(Long id) {
+        Movie movie = movieRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.MOVIE_DONT_EXISTED));
+        MovieDetailRes movieRes = MovieMapper.INSTANCE.toMovieRes(movie);
+        return movieRes;
+    }
+
+    public MovieNameRes getMovieName(Long id) {
+        Movie movie = movieRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.MOVIE_DONT_EXISTED));
+        MovieNameRes movieRes = MovieMapper.INSTANCE.toMovieNameRes(movie);
+        return movieRes;
     }
 
     public Movie updateExistingMovie(Long id, MovieRequestDto moviedDto) {

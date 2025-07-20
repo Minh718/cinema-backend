@@ -24,7 +24,7 @@ public class SeatEventListener {
 
     @KafkaListener(topics = KafkaTopics.SEAT_LOCKED, groupId = "booking-service")
     public void handleSeatLocked(SeatLockedEvent event) {
-        bookingTracker.markSeatLocked(event.getBookingId(), event.getSeatIds());
+        bookingTracker.markSeatLocked(event.getBookingId());
         finalizerService.tryFinalizeBooking(event.getBookingId());
     }
 

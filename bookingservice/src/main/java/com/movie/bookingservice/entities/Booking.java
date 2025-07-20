@@ -26,7 +26,7 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
+    private String userId;
     private Long showTimeId;
 
     private Double totalPrice;

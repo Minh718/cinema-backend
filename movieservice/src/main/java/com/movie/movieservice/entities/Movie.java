@@ -2,6 +2,7 @@ package com.movie.movieservice.entities;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 import com.movie.movieservice.enums.MovieStatus;
 
@@ -27,12 +28,12 @@ public class Movie {
     private Integer duration;
     private String director;
     private String language;
-    private String genre;
+    private Set<Genre> genres;
     private MovieStatus status;
     private String thumbnailUrl;
     private LocalDate releaseDate;
-    private LocalDate backdropPath;
-    private LocalDate posterPath;
+    private String backdropPath;
+    private String posterPath;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

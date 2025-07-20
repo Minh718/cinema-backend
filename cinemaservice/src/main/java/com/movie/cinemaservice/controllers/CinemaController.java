@@ -48,14 +48,8 @@ public class CinemaController {
         return ApiRes.<Cinema>builder().result(cinema).code(1000).message("Successfully").build();
     }
 
-    @GetMapping("/{roomId}/seats")
-    public ApiRes<List<SeatResponse>> getSeatsByRoomId(@PathVariable Long roomId) {
-        List<SeatResponse> seats = roomService.getSeatsByRoomId(roomId);
-        return ApiRes.<List<SeatResponse>>builder().code(200).message("Success").result(seats).build();
-    }
-
     @Cacheable(value = "getAllCinemas")
-    @GetMapping("/public/cinemas")
+    @GetMapping("/public")
     public ApiRes<List<CinemaRes>> getAllCinemas() {
         List<CinemaRes> seats = cinemaService.getAllCinemas();
         return ApiRes.<List<CinemaRes>>builder().code(200).message("Success").result(seats).build();

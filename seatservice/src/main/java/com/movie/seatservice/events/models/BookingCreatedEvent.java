@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
+import com.movie.seatservice.dtos.requests.SeatReq;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,7 +23,7 @@ public class BookingCreatedEvent {
     private Long roomId;
     private Long showTimeId;
 
-    private Set<Long> seatIds; // Requested seat IDs
+    private Set<SeatReq> seats; // Requested seat IDs
     // private BigDecimal totalPrice; // Total booking amount
 
     // private String paymentMethod; // E.g., "MOMO", "VNPAY", "CASH"

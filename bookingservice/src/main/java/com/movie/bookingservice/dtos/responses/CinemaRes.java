@@ -1,4 +1,4 @@
-package com.movie.cinemaservice.dtos.responses;
+package com.movie.bookingservice.dtos.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

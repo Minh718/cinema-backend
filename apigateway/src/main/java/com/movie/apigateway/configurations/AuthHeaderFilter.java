@@ -14,7 +14,6 @@ import org.springframework.web.server.ServerWebExchange;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-
 @Component
 @RequiredArgsConstructor
 public class AuthHeaderFilter implements GlobalFilter {

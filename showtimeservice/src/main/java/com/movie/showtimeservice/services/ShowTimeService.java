@@ -6,15 +6,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.movie.showtimeservice.enums.ShowTimeStatus;
+import com.movie.showtimeservice.mappers.ShowTimeMapper;
+
 import org.springframework.stereotype.Service;
 
 import com.movie.showtimeservice.dtos.requests.AutoAssignRequest;
 import com.movie.showtimeservice.dtos.responses.ApiRes;
 import com.movie.showtimeservice.dtos.responses.SeatResponse;
+import com.movie.showtimeservice.dtos.responses.ShowTimeRes;
 import com.movie.showtimeservice.entities.ShowTime;
-import com.movie.showtimeservice.entities.ShowTimeSeat;
 import com.movie.showtimeservice.repositories.ShowTimeRepository;
-import com.movie.showtimeservice.repositories.ShowTimeSeatRepository;
 import com.movie.showtimeservice.repositories.httpClient.CinemaClient;
 
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 public class ShowTimeService {
 
     private final ShowTimeRepository showTimeRepository;
-    private final ShowTimeSeatRepository showTimeSeatRepository;
     private final CinemaClient cinemaClient;
 
     public ShowTime autoAssign(AutoAssignRequest request) {
@@ -68,21 +68,6 @@ public class ShowTimeService {
                 .status(ShowTimeStatus.SCHEDULED)
                 .build();
         ShowTime savedShowTime = showTimeRepository.save(showTime);
-        ApiRes<List<SeatResponse>> res = cinemaClient.getSeatsByRoomId(request.getRoomId());
-        List<SeatResponse> seats = res.getResult();
-        List<ShowTimeSeat> showTimeSeats = new ArrayList<>();
-        if (seats != null) {
-            for (SeatResponse seat : seats) {
-                showTimeSeats.add(ShowTimeSeat.builder()
-                        .seatId(seat.getId())
-                        .seatCode(seat.getCode())
-                        .available(true)
-                        .showTime(savedShowTime)
-                        .build());
-            }
-            showTimeSeatRepository.saveAll(showTimeSeats);
-        }
-
         return showTimeRepository.save(showTime);
     }
 
@@ -99,5 +84,14 @@ public class ShowTimeService {
     public List<Long> getNowShowingMovieIdsByCinemaId(Long cinemaId) {
 
         return showTimeRepository.findNowShowingMovieIdsByCinemaId(cinemaId, ShowTimeStatus.SCHEDULED);
+    }
+
+    public ShowTimeRes getBookableShowTime(Long showTimeId) {
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+
+        ShowTime showtime = showTimeRepository.findBookableShowTimeById(showTimeId, today, now)
+                .orElseThrow(() -> new IllegalArgumentException("Showtime is not available for booking."));
+        return ShowTimeMapper.INSTANCE.toShowTimeRes(showtime);
     }
 }

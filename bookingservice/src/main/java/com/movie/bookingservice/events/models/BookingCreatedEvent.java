@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.movie.bookingservice.dtos.requests.SeatReq;
 import com.movie.bookingservice.enums.PaymentMethod;
 
 @Data
@@ -25,7 +26,7 @@ public class BookingCreatedEvent {
     private Long roomId;
     private Long showTimeId;
 
-    private Set<Long> seatIds; // Requested seat IDs
+    private Set<SeatReq> seats; // Requested seat IDs
 
     private String orderId;
     private String amount;

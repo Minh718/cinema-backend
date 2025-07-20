@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.movie.seatservice.dtos.requests.SeatReq;
 import com.movie.seatservice.dtos.responses.SeatResponse;
 import com.movie.seatservice.entities.BookingSeat;
 import com.movie.seatservice.events.models.BookingCreatedEvent;
@@ -46,16 +47,22 @@ public class SeatService {
                 .stream()
                 .collect(Collectors.toMap(SeatResponse::getId, SeatResponse::getCode));
 
-        List<Long> invalidSeatIds = event.getSeatIds().stream()
-                .filter(seatId -> !validSeatMap.containsKey(seatId))
+        List<SeatReq> invalidSeats = event.getSeats().stream()
+                .filter(seat -> {
+                    String validCode = validSeatMap.get(seat.getId());
+                    return validCode == null || !validCode.equals(seat.getCode());
+                })
                 .toList();
 
-        if (!invalidSeatIds.isEmpty()) {
+        if (!invalidSeats.isEmpty()) {
             throw new CustomException(ErrorCode.SEAT_BOOKING_FAILED);
         }
 
         Set<Long> bookedSeatIds = redisService.getSeatIds(redisKey);
-        List<Long> alreadyBooked = event.getSeatIds().stream()
+        Set<Long> bookingSeatIds = event.getSeats().stream()
+                .map(SeatReq::getId)
+                .collect(Collectors.toSet());
+        List<Long> alreadyBooked = bookingSeatIds.stream()
                 .filter(bookedSeatIds::contains)
                 .toList();
 
@@ -63,13 +70,13 @@ public class SeatService {
             throw new CustomException(ErrorCode.SEAT_BOOKING_FAILED);
         }
 
-        redisService.setWithTTL(getUnpaidSeatsKey(bookingId), event.getSeatIds().toArray(Long[]::new), 15,
+        redisService.setWithTTL(getUnpaidSeatsKey(bookingId), bookingSeatIds.toArray(Long[]::new), 15,
                 TimeUnit.MINUTES);
         redisService.setKeyinMinutes(getBookingShowTimeKey(bookingId), showTimeId, 15);
 
-        redisService.addSeats(redisKey, event.getSeatIds());
+        redisService.addSeats(redisKey, bookingSeatIds);
 
-        List<BookingSeat> bookingSeats = event.getSeatIds().stream()
+        List<BookingSeat> bookingSeats = bookingSeatIds.stream()
                 .map(seatId -> BookingSeat.builder()
                         .bookingId(bookingId)
                         .seatId(seatId)

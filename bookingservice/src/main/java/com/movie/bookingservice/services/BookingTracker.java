@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import com.movie.bookingservice.dtos.BookingStatusTracker;
+import com.movie.bookingservice.dtos.requests.SeatReq;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,10 +26,9 @@ public class BookingTracker {
         return value != null ? (BookingStatusTracker) value : new BookingStatusTracker();
     }
 
-    public void markSeatLocked(Long bookingId, Set<Long> seatIds) {
+    public void markSeatLocked(Long bookingId) {
         BookingStatusTracker status = getStatus(bookingId);
         status.setSeatLocked(true);
-        status.setSeatIds(seatIds);
         status.setBookingId(bookingId);
         redisService.setKeyinDuration(key(bookingId), status, TTL);
     }
