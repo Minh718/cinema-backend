@@ -6,8 +6,7 @@ import java.util.List;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import com.movie.heatseatservice.dtos.requests.HeatSeatRequest;
-import com.movie.heatseatservice.dtos.responses.HeatSeatRes;
+import com.movie.heatseatservice.dtos.HeatSeatMessage;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,11 +15,11 @@ import lombok.RequiredArgsConstructor;
 public class SocketService {
     private final SimpMessagingTemplate simpMessagingTemplate;
 
-    public void broadcastToShowTimeBooking(HeatSeatRequest request, String typeBroadcast) {
+    public void broadcastToShowTimeBooking(HeatSeatMessage message) {
         // Broadcast to WebSocket subscribers
         simpMessagingTemplate.convertAndSend(
-                "/topic/seats/" + request.getShowTimeId(),
-                new HeatSeatRes(typeBroadcast, request.getShowTimeId(), request.getSeatIds()));
+                "/topic/seats/" + message.getShowTimeId(),
+                message);
     }
 
 }

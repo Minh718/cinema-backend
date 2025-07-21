@@ -7,7 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import com.movie.heatseatservice.dtos.requests.HeatSeatRequest;
+import com.movie.heatseatservice.dtos.HeatSeatMessage;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,19 +19,19 @@ public class HeatSeatService {
 
     private final SocketService socketService;
 
-    public void holdSeats(HeatSeatRequest request) {
-        String redisKey = "showtime:" + request.getShowTimeId() + ":heat-seats";
+    public void holdSeats(HeatSeatMessage message) {
+        String redisKey = "showtime:" + message.getShowTimeId() + ":heat-seats";
 
-        redisTemplate.opsForSet().add(redisKey, request.getSeatIds().toArray());
+        redisTemplate.opsForSet().add(redisKey, message.getSeatIds().toArray());
 
-        socketService.broadcastToShowTimeBooking(request, "HOLD");
+        socketService.broadcastToShowTimeBooking(message);
     }
 
-    public void releaseSeats(HeatSeatRequest request) {
-        String redisKey = "showtime:" + request.getShowTimeId() + ":heat-seats";
+    public void releaseSeats(HeatSeatMessage message) {
+        String redisKey = "showtime:" + message.getShowTimeId() + ":heat-seats";
 
-        redisTemplate.opsForSet().remove(redisKey, request.getSeatIds().toArray());
+        redisTemplate.opsForSet().remove(redisKey, message.getSeatIds().toArray());
 
-        socketService.broadcastToShowTimeBooking(request, "RELEASE");
+        socketService.broadcastToShowTimeBooking(message);
     }
 }
