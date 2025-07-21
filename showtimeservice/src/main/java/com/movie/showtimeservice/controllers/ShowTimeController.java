@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import com.movie.showtimeservice.dtos.requests.AutoAssignRequest;
 import com.movie.showtimeservice.dtos.responses.ApiRes;
 import com.movie.showtimeservice.dtos.responses.ShowTimeRes;
+import com.movie.showtimeservice.dtos.responses.ShowTimesOfMovie;
 import com.movie.showtimeservice.entities.ShowTime;
 import com.movie.showtimeservice.services.ShowTimeService;
 
@@ -60,4 +61,24 @@ public class ShowTimeController {
     List<Long> getNowShowingMovieIdsByCinema(@RequestParam("cinemaId") Long cinemaId) {
         return showTimeService.getNowShowingMovieIdsByCinemaId(cinemaId);
     }
+
+    @GetMapping("/{id}/bookable")
+    public ApiRes<ShowTimeRes> checkShowTimeAvailable(@PathVariable Long id) {
+        ShowTimeRes showTime = showTimeService.getBookableShowTime(id);
+        return ApiRes.<ShowTimeRes>builder()
+                .result(showTime)
+                .code(1000)
+                .message("successfully")
+                .build();
+    }
+
+    @GetMapping("{movieId}/showtimes")
+    public ApiRes<ShowTimesOfMovie> getShowTimesOfMovie(@PathVariable Long movieId) {
+        return ApiRes.<ShowTimesOfMovie>builder()
+                .result(showTimeService.getShowTimesOfMovie(movieId))
+                .code(1000)
+                .message("successfully")
+                .build();
+    }
+
 }

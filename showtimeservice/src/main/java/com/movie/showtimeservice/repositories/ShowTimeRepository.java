@@ -39,4 +39,7 @@ public interface ShowTimeRepository extends JpaRepository<ShowTime, Long> {
         Optional<ShowTime> findBookableShowTimeById(@Param("id") Long id,
                         @Param("currentDate") LocalDate currentDate,
                         @Param("currentTime") LocalTime currentTime);
+
+        @Query("SELECT s FROM ShowTime s WHERE s.movieId = :movieId AND s.status = 'ACTIVE' AND (s.date > CURRENT_DATE OR (s.date = CURRENT_DATE AND s.endTime > CURRENT_TIME))")
+        List<ShowTime> findValidShowTimesByMovieId(@Param("movieId") Long movieId);
 }

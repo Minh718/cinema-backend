@@ -5,16 +5,18 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.movie.showtimeservice.enums.ShowTimeStatus;
-import com.movie.showtimeservice.mappers.ShowTimeMapper;
-
 import org.springframework.stereotype.Service;
 
 import com.movie.showtimeservice.dtos.requests.AutoAssignRequest;
-import com.movie.showtimeservice.dtos.responses.ApiRes;
-import com.movie.showtimeservice.dtos.responses.SeatResponse;
 import com.movie.showtimeservice.dtos.responses.ShowTimeRes;
+import com.movie.showtimeservice.dtos.responses.ShowTimesOfMovie;
+import com.movie.showtimeservice.dtos.responses.TimeShowTimeRes;
 import com.movie.showtimeservice.entities.ShowTime;
+import com.movie.showtimeservice.enums.ShowTimeStatus;
+import com.movie.showtimeservice.enums.TypeShowTime;
+import com.movie.showtimeservice.exceptions.CustomException;
+import com.movie.showtimeservice.exceptions.ErrorCode;
+import com.movie.showtimeservice.mappers.ShowTimeMapper;
 import com.movie.showtimeservice.repositories.ShowTimeRepository;
 import com.movie.showtimeservice.repositories.httpClient.CinemaClient;
 
@@ -60,10 +62,8 @@ public class ShowTimeService {
                 .endTime(end)
                 .movieId(request.getMovieId())
                 .roomId(request.getRoomId())
-                .screenType("2D")
                 .language("EN")
                 .cinemaId(request.getCinemaId())
-                .subtitle("VN")
                 .basePrice(5.5)
                 .status(ShowTimeStatus.SCHEDULED)
                 .build();
@@ -93,5 +93,40 @@ public class ShowTimeService {
         ShowTime showtime = showTimeRepository.findBookableShowTimeById(showTimeId, today, now)
                 .orElseThrow(() -> new IllegalArgumentException("Showtime is not available for booking."));
         return ShowTimeMapper.INSTANCE.toShowTimeRes(showtime);
+    }
+
+    public ShowTimesOfMovie getShowTimesOfMovie(Long movieId) {
+        List<ShowTime> showTimes = showTimeRepository.findValidShowTimesByMovieId(movieId);
+
+        if (showTimes.isEmpty()) {
+            throw new CustomException(ErrorCode.SHOWTIME_NOT_FOUND);
+        }
+
+        // Assume all showtimes share these details:
+        ShowTime first = showTimes.get(0);
+
+        List<TimeShowTimeRes> subShows = new ArrayList<>();
+        List<TimeShowTimeRes> dubShows = new ArrayList<>();
+
+        for (ShowTime st : showTimes) {
+            TimeShowTimeRes res = ShowTimeMapper.INSTANCE.toTimeShowTimeRes(st);
+
+            if (st.getType() == TypeShowTime.SUBTITLE) {
+                subShows.add(res);
+            } else if (st.getType() == TypeShowTime.DUBBED) {
+                dubShows.add(res);
+            }
+        }
+
+        return ShowTimesOfMovie.builder()
+                .language(first.getLanguage())
+                .subtitle("Vietnamese") // Adjust if needed
+                .basePrice(first.getBasePrice())
+                .movieId(movieId)
+                .roomId(first.getRoomId())
+                .cinemaId(first.getCinemaId())
+                .subShows(subShows)
+                .dubShows(dubShows)
+                .build();
     }
 }

@@ -27,7 +27,7 @@ public class BookingController {
 
     private final BookingService bookingService;
 
-    @PostMapping
+    @PostMapping("/save")
     public ApiRes<Booking> createBooking(@RequestBody BookingRequest request, HttpServletRequest httpServletRequest)
             throws JsonProcessingException {
         String tokenBearer = httpServletRequest.getHeader("Authorization");
@@ -37,6 +37,11 @@ public class BookingController {
                 .code(1000)
                 .message("Booking success")
                 .build();
+    }
+
+    @GetMapping("/{id}")
+    public ApiRes<Booking> getDetailBooking(@PathVariable Long id) {
+        return ApiRes.<Booking>builder().result(bookingService.getDetailBooking(id)).build();
     }
 
     private String getClientIpAddress(HttpServletRequest request) {

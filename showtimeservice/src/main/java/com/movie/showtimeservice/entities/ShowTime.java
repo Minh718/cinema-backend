@@ -1,10 +1,13 @@
 package com.movie.showtimeservice.entities;
 
+import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import com.movie.showtimeservice.enums.ShowTimeStatus;
+import com.movie.showtimeservice.enums.TypeShowTime;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,9 +31,8 @@ public class ShowTime {
     private LocalTime endTime;
     @Enumerated(EnumType.STRING)
     private ShowTimeStatus status;
-    private String screenType;
     private String language;
-    private String subtitle;
+    private TypeShowTime type;
     private Double basePrice;
 
     private Long movieId;

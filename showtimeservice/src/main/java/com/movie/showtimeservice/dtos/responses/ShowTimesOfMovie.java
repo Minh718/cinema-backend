@@ -2,6 +2,7 @@ package com.movie.showtimeservice.dtos.responses;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,13 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ShowTimeRes {
-
-    private Long id;
-
-    private LocalDate date;
-    private LocalTime startTime;
-    private LocalTime endTime;
+public class ShowTimesOfMovie {
     private String language;
     private String subtitle;
     private Double basePrice;
@@ -26,4 +21,6 @@ public class ShowTimeRes {
     private Long movieId;
     private Long roomId;
     private Long cinemaId;
+    private List<TimeShowTimeRes> subShows;
+    private List<TimeShowTimeRes> dubShows;
 }

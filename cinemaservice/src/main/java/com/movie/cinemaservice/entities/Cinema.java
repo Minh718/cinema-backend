@@ -28,8 +28,6 @@ public class Cinema {
     private String brand;
     private String description;
 
-    private String city;
-    private String district;
     private String address;
 
     private String phoneNumber;
