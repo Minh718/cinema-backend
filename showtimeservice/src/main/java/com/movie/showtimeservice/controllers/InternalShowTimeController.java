@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.movie.showtimeservice.dtos.responses.ApiRes;
-import com.movie.showtimeservice.dtos.responses.ShowTimeRes;
+import com.movie.showtimeservice.dtos.responses.ShowTimeDetailRes;
 import com.movie.showtimeservice.services.ShowTimeService;
 
 import lombok.RequiredArgsConstructor;
@@ -18,9 +18,9 @@ public class InternalShowTimeController {
     private final ShowTimeService showTimeService;
 
     @GetMapping("/{id}/bookable")
-    public ApiRes<ShowTimeRes> checkShowTimeAvailable(@PathVariable Long id) {
-        ShowTimeRes showTime = showTimeService.getBookableShowTime(id);
-        return ApiRes.<ShowTimeRes>builder()
+    public ApiRes<ShowTimeDetailRes> checkShowTimeAvailable(@PathVariable Long id) {
+        ShowTimeDetailRes showTime = showTimeService.getBookableDetailShowTime(id);
+        return ApiRes.<ShowTimeDetailRes>builder()
                 .result(showTime)
                 .code(1000)
                 .message("successfully")

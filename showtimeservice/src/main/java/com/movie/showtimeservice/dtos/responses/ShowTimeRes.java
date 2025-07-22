@@ -1,7 +1,8 @@
 package com.movie.showtimeservice.dtos.responses;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,17 +14,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ShowTimeRes {
-
     private Long id;
-
-    private LocalDate date;
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime startTime;
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime endTime;
-    private String language;
-    private String subtitle;
-    private Double basePrice;
-
-    private Long movieId;
-    private Long roomId;
-    private Long cinemaId;
 }

@@ -7,7 +7,8 @@ import lombok.Getter;
 
 @Getter
 public enum ErrorCode {
-    SHOWTIME_NOT_FOUND(1000, "Showtime not found", HttpStatus.NOT_FOUND);
+    SHOWTIME_NOT_FOUND(1000, "Showtime not found", HttpStatus.NOT_FOUND),
+    SHOWTIMEGROUP_NOT_FOUND(1001, "Showtime group not found", HttpStatus.NOT_FOUND);
 
     ErrorCode(
 

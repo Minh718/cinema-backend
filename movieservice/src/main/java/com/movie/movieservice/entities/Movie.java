@@ -24,6 +24,8 @@ public class Movie {
     private Long id;
 
     private String title;
+    private String originalTitle;
+    private String ageRating;
     private String description;
     private Integer duration;
     private String director;

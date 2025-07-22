@@ -2,23 +2,25 @@ package com.movie.showtimeservice.services;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import com.movie.showtimeservice.dtos.requests.AutoAssignRequest;
+import com.movie.showtimeservice.dtos.requests.ShowTimeGroupCreateReq;
+import com.movie.showtimeservice.dtos.responses.ShowTimeDetailRes;
+import com.movie.showtimeservice.dtos.responses.ShowTimeGroupRes;
 import com.movie.showtimeservice.dtos.responses.ShowTimeRes;
-import com.movie.showtimeservice.dtos.responses.ShowTimesOfMovie;
-import com.movie.showtimeservice.dtos.responses.TimeShowTimeRes;
+import com.movie.showtimeservice.dtos.responses.ShowTimesOfMovieAndDateRes;
 import com.movie.showtimeservice.entities.ShowTime;
-import com.movie.showtimeservice.enums.ShowTimeStatus;
+import com.movie.showtimeservice.entities.ShowTimeGroup;
 import com.movie.showtimeservice.enums.TypeShowTime;
 import com.movie.showtimeservice.exceptions.CustomException;
 import com.movie.showtimeservice.exceptions.ErrorCode;
+import com.movie.showtimeservice.mappers.ShowTimeGroupMapper;
 import com.movie.showtimeservice.mappers.ShowTimeMapper;
+import com.movie.showtimeservice.repositories.ShowTimeGroupRepository;
 import com.movie.showtimeservice.repositories.ShowTimeRepository;
-import com.movie.showtimeservice.repositories.httpClient.CinemaClient;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,106 +29,89 @@ import lombok.RequiredArgsConstructor;
 public class ShowTimeService {
 
     private final ShowTimeRepository showTimeRepository;
-    private final CinemaClient cinemaClient;
+    private final ShowTimeGroupRepository showTimeGroupRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
-    public ShowTime autoAssign(AutoAssignRequest request) {
+    public ShowTimeRes addShowTimeToGroupShowTime(Long showTimeGroupId) {
         int bufferMinutes = 15;
         LocalTime opening = LocalTime.of(8, 0);
         LocalTime closing = LocalTime.of(23, 0);
 
-        List<ShowTime> existing = showTimeRepository.findByRoomIdAndCinemaIdIdAndDateOrderByStartTimeAsc(
-                request.getRoomId(), request.getCinemaId(), request.getDate());
+        ShowTimeGroup showTimeGroup = showTimeGroupRepository.findById(showTimeGroupId)
+                .orElseThrow(() -> new CustomException(ErrorCode.SHOWTIMEGROUP_NOT_FOUND));
 
-        LocalTime currentStart = opening;
+        String redisKey = "lastEndTime:" + showTimeGroup.getRoomId() + ":" + showTimeGroup.getDate().toString();
 
-        for (ShowTime show : existing) {
-            LocalTime currentEnd = currentStart.plusMinutes(request.getMovieDuration() + bufferMinutes);
-            if (currentEnd.isBefore(show.getStartTime())) {
-                return saveShowTime(currentStart, request, request.getMovieDuration());
-            }
-            currentStart = show.getEndTime().plusMinutes(bufferMinutes);
+        String endTimeStr = redisTemplate.opsForValue().get(redisKey);
+
+        LocalTime currentStart = endTimeStr != null
+                ? roundUpToQuarter(LocalTime.parse(endTimeStr)).plusMinutes(bufferMinutes)
+                : opening;
+
+        LocalTime currentEnd = currentStart.plusMinutes(showTimeGroup.getDuration());
+
+        if (currentEnd.isAfter(closing)) {
+            redisTemplate.delete(redisKey);
+            throw new RuntimeException("No available time slot");
         }
 
-        if (currentStart.plusMinutes(request.getMovieDuration()).isBefore(closing)) {
-            return saveShowTime(currentStart, request, request.getMovieDuration());
-        }
+        ShowTime newShowTime = ShowTime.builder().startTime(currentEnd).endTime(currentEnd).build();
+        newShowTime.setShowTimeGroup(showTimeGroup);
+        cacheLastEndTime(redisKey, newShowTime.getEndTime());
 
-        throw new RuntimeException("No available time slot");
+        return ShowTimeMapper.INSTANCE.toShowTimeRes(showTimeRepository.save(newShowTime));
     }
 
-    private ShowTime saveShowTime(LocalTime start, AutoAssignRequest request, int duration) {
-        LocalTime end = start.plusMinutes(duration);
-        ShowTime showTime = ShowTime.builder()
-                .date(request.getDate())
-                .startTime(start)
-                .endTime(end)
-                .movieId(request.getMovieId())
-                .roomId(request.getRoomId())
-                .language("EN")
-                .cinemaId(request.getCinemaId())
-                .basePrice(5.5)
-                .status(ShowTimeStatus.SCHEDULED)
-                .build();
-        ShowTime savedShowTime = showTimeRepository.save(showTime);
-        return showTimeRepository.save(showTime);
+    private LocalTime roundUpToQuarter(LocalTime time) {
+        int minute = time.getMinute();
+        int rounded = ((minute + 14) / 15) * 15;
+        return time.withMinute(0).plusMinutes(rounded).withSecond(0).withNano(0);
+    }
+
+    private void cacheLastEndTime(String redisKey, LocalTime endTime) {
+        redisTemplate.opsForValue().set(redisKey, endTime.toString());
+    }
+
+    public ShowTimeGroup createGroupShowTime(ShowTimeGroupCreateReq request) {
+        return showTimeGroupRepository.save(ShowTimeGroupMapper.INSTANCE.toShowTimeGroup(request));
     }
 
     public List<LocalDate> getFutureShowDatesByMovieIdAndCinemaId(Long movieId, Long cinemaId) {
-        return showTimeRepository.findDistinctFutureDatesByMovieIdAndCinemaId(movieId, cinemaId,
-                ShowTimeStatus.SCHEDULED);
+        return showTimeGroupRepository.findDistinctFutureDatesByMovieIdAndCinemaId(movieId, cinemaId);
     }
 
-    public List<ShowTime> getShowTimesByMovieIdAndCinemaIdAndDate(Long movieId, Long cinemaId, LocalDate date) {
-        return showTimeRepository.findByMovieIdAndCinemaIdAndDateAndStatusOrderByStartTimeAsc(movieId, cinemaId, date,
-                ShowTimeStatus.SCHEDULED);
+    public ShowTimesOfMovieAndDateRes getShowTimesByMovieIdAndCinemaIdAndDate(Long movieId, Long cinemaId,
+            LocalDate date) {
+        ShowTimeGroup showTimeGroupDub = showTimeGroupRepository.findByMovieIdAndCinemaIdAndDateAndStatusAndType(
+                movieId, cinemaId, date,
+                "ACTIVE", TypeShowTime.DUBBED);
+
+        ShowTimeGroup showTimeGroupSub = showTimeGroupRepository.findByMovieIdAndCinemaIdAndDateAndStatusAndType(
+                movieId, cinemaId, date,
+                "ACTIVE", TypeShowTime.SUBTITLE);
+        List<ShowTimeRes> dubShows = ShowTimeMapper.INSTANCE.toShowTimeRes(showTimeGroupDub.getShowTimes());
+        List<ShowTimeRes> subShows = ShowTimeMapper.INSTANCE.toShowTimeRes(showTimeGroupSub.getShowTimes());
+        return new ShowTimesOfMovieAndDateRes(dubShows, subShows);
     }
 
     public List<Long> getNowShowingMovieIdsByCinemaId(Long cinemaId) {
 
-        return showTimeRepository.findNowShowingMovieIdsByCinemaId(cinemaId, ShowTimeStatus.SCHEDULED);
+        return showTimeGroupRepository.findNowShowingMovieIdsByCinemaId(cinemaId, "ACTIVE");
     }
 
-    public ShowTimeRes getBookableShowTime(Long showTimeId) {
+    public ShowTimeDetailRes getBookableDetailShowTime(Long showTimeId) {
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
 
-        ShowTime showtime = showTimeRepository.findBookableShowTimeById(showTimeId, today, now)
-                .orElseThrow(() -> new IllegalArgumentException("Showtime is not available for booking."));
-        return ShowTimeMapper.INSTANCE.toShowTimeRes(showtime);
+        ShowTimeDetailRes showtime = showTimeGroupRepository.findBookableDetailShowTimeById(showTimeId, today, now)
+                .orElseThrow(() -> new CustomException(ErrorCode.SHOWTIME_NOT_FOUND));
+        return showtime;
     }
 
-    public ShowTimesOfMovie getShowTimesOfMovie(Long movieId) {
-        List<ShowTime> showTimes = showTimeRepository.findValidShowTimesByMovieId(movieId);
+    public List<ShowTimeGroupRes> getShowTimeGroupsInDate(LocalDate date) {
+        List<ShowTimeGroup> showTimeGroups = showTimeGroupRepository.findShowTimeGroupsInDate(date);
 
-        if (showTimes.isEmpty()) {
-            throw new CustomException(ErrorCode.SHOWTIME_NOT_FOUND);
-        }
+        return ShowTimeGroupMapper.INSTANCE.toShowTimeGroupRes(showTimeGroups);
 
-        // Assume all showtimes share these details:
-        ShowTime first = showTimes.get(0);
-
-        List<TimeShowTimeRes> subShows = new ArrayList<>();
-        List<TimeShowTimeRes> dubShows = new ArrayList<>();
-
-        for (ShowTime st : showTimes) {
-            TimeShowTimeRes res = ShowTimeMapper.INSTANCE.toTimeShowTimeRes(st);
-
-            if (st.getType() == TypeShowTime.SUBTITLE) {
-                subShows.add(res);
-            } else if (st.getType() == TypeShowTime.DUBBED) {
-                dubShows.add(res);
-            }
-        }
-
-        return ShowTimesOfMovie.builder()
-                .language(first.getLanguage())
-                .subtitle("Vietnamese") // Adjust if needed
-                .basePrice(first.getBasePrice())
-                .movieId(movieId)
-                .roomId(first.getRoomId())
-                .cinemaId(first.getCinemaId())
-                .subShows(subShows)
-                .dubShows(dubShows)
-                .build();
     }
 }
