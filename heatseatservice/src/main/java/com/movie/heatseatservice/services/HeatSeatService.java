@@ -8,6 +8,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.movie.heatseatservice.dtos.HeatSeatMessage;
+import com.movie.heatseatservice.redis.RedisMessagePublisher;
 
 import lombok.RequiredArgsConstructor;
 

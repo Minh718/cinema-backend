@@ -1,8 +1,5 @@
 package com.movie.heatseatservice.services;
 
-import java.time.Duration;
-import java.util.List;
-
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
