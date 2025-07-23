@@ -21,6 +21,7 @@ import com.movie.movieservice.dtos.responses.ApiRes;
 import com.movie.movieservice.dtos.responses.HomepageMovieRes;
 import com.movie.movieservice.dtos.responses.MetadataDTO;
 import com.movie.movieservice.dtos.responses.MovieDetailRes;
+import com.movie.movieservice.dtos.responses.MovieRes;
 import com.movie.movieservice.entities.Movie;
 import com.movie.movieservice.enums.MovieStatus;
 import com.movie.movieservice.services.MovieService;
@@ -104,6 +105,22 @@ public class MovieController {
     @GetMapping("/public/{id}")
     public ApiRes<MovieDetailRes> getMovieDetail(@PathVariable("id") Long id) {
         return ApiRes.<MovieDetailRes>builder().code(200).result(movieService.getMovieDetail(id)).message("success")
+                .build();
+    }
+
+    @GetMapping("/public/all")
+    public ApiMetaRes<List<MovieRes>> getAllMovies(@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String orderBy) {
+        Page<MovieRes> moviePage = movieService.getAllMovies(page, size, sortBy, orderBy);
+        MetadataDTO metadata = new MetadataDTO(
+                moviePage.getTotalElements(),
+                moviePage.getTotalPages(),
+                moviePage.getNumber(),
+                moviePage.getSize());
+        return ApiMetaRes.<List<MovieRes>>builder().code(200).result(moviePage.getContent()).metadata(metadata)
+                .message("success")
                 .build();
     }
 }

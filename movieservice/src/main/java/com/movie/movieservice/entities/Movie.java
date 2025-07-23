@@ -20,13 +20,12 @@ import lombok.NoArgsConstructor;
 @Table(name = "tbl_movie")
 public class Movie {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
     private String originalTitle;
     private String ageRating;
-    private String description;
+    private String overview;
     private Integer duration;
     private String director;
     private String language;
@@ -36,6 +35,7 @@ public class Movie {
     private LocalDate releaseDate;
     private String backdropPath;
     private String posterPath;
+    private Double rating;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

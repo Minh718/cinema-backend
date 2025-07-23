@@ -108,8 +108,15 @@ public class ShowTimeService {
         return showtime;
     }
 
-    public List<ShowTimeGroupRes> getShowTimeGroupsInDate(LocalDate date) {
-        List<ShowTimeGroup> showTimeGroups = showTimeGroupRepository.findShowTimeGroupsInDate(date);
+    public List<ShowTimeGroupRes> getShowTimeGroupsInDate(LocalDate date, TypeShowTime type) {
+        List<ShowTimeGroup> showTimeGroups = showTimeGroupRepository.findShowTimeGroupsByTypeInDate(date, type);
+
+        return ShowTimeGroupMapper.INSTANCE.toShowTimeGroupRes(showTimeGroups);
+
+    }
+
+    public List<ShowTimeGroupRes> getShowTimeGroupsByMovieIdInDate(LocalDate date, Long movieId) {
+        List<ShowTimeGroup> showTimeGroups = showTimeGroupRepository.findShowTimeGroupsByMovieIdInDate(date, movieId);
 
         return ShowTimeGroupMapper.INSTANCE.toShowTimeGroupRes(showTimeGroups);
 

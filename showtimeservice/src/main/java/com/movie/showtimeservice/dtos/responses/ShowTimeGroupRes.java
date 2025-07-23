@@ -29,6 +29,5 @@ public class ShowTimeGroupRes {
     private Long movieId;
     private Long roomId;
     private Long cinemaId;
-    private TypeShowTime type;
     List<ShowTimeRes> showTimes;
 }

@@ -14,18 +14,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MovieDetailRes {
+public class MovieRes {
     private Long id;
-
     private String title;
     private String overview;
     private Integer duration;
-    private String director;
-    private String language;
     private Set<Genre> genre;
-    private String thumbnailUrl;
-    private LocalDate releaseDate;
-    private String backdropPath;
     private String posterPath;
-
 }

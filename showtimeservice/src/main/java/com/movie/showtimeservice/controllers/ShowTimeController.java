@@ -18,6 +18,7 @@ import com.movie.showtimeservice.dtos.responses.ShowTimeGroupRes;
 import com.movie.showtimeservice.dtos.responses.ShowTimeRes;
 import com.movie.showtimeservice.dtos.responses.ShowTimesOfMovieAndDateRes;
 import com.movie.showtimeservice.entities.ShowTimeGroup;
+import com.movie.showtimeservice.enums.TypeShowTime;
 import com.movie.showtimeservice.services.ShowTimeService;
 
 import lombok.RequiredArgsConstructor;
@@ -89,10 +90,11 @@ public class ShowTimeController {
         }
 
         @GetMapping("/showtimegroups")
-        public ApiRes<List<ShowTimeGroupRes>> getShowTimeGroupsInDate(
-                        @RequestParam("date") LocalDate date) {
+        public ApiRes<List<ShowTimeGroupRes>> getShowTimeGroupsByMovieIdInDate(
+                        @RequestParam("date") LocalDate date,
+                        @RequestParam("movieId") Long movieId) {
                 return ApiRes.<List<ShowTimeGroupRes>>builder()
-                                .result(showTimeService.getShowTimeGroupsInDate(date))
+                                .result(showTimeService.getShowTimeGroupsByMovieIdInDate(date, movieId))
                                 .code(1000)
                                 .message("successfully")
                                 .build();

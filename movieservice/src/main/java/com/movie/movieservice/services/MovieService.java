@@ -14,6 +14,7 @@ import com.movie.movieservice.dtos.requests.MovieRequestDto;
 import com.movie.movieservice.dtos.responses.HomepageMovieRes;
 import com.movie.movieservice.dtos.responses.MovieDetailRes;
 import com.movie.movieservice.dtos.responses.MovieNameRes;
+import com.movie.movieservice.dtos.responses.MovieRes;
 import com.movie.movieservice.entities.Movie;
 import com.movie.movieservice.enums.MovieStatus;
 import com.movie.movieservice.exceptions.CustomException;
@@ -54,7 +55,7 @@ public class MovieService {
 
     public MovieDetailRes getMovieDetail(Long id) {
         Movie movie = movieRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.MOVIE_DONT_EXISTED));
-        MovieDetailRes movieRes = MovieMapper.INSTANCE.toMovieRes(movie);
+        MovieDetailRes movieRes = MovieMapper.INSTANCE.toMovieDetailRes(movie);
         return movieRes;
     }
 
@@ -113,5 +114,13 @@ public class MovieService {
             return movieRepository.save(existingMovie);
         }
         return movie.orElse(null);
+    }
+
+    public Page<MovieRes> getAllMovies(int page, int size, String sortBy,
+            String orderBy) {
+        Sort.Direction sortDirection = orderBy.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+        Page<Movie> movies = movieRepository.findAll(pageable);
+        return movies.map(MovieMapper.INSTANCE::toMovieRes);
     }
 }

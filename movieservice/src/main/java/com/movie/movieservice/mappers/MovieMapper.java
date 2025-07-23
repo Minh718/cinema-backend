@@ -8,6 +8,7 @@ import org.mapstruct.factory.Mappers;
 
 import com.movie.movieservice.dtos.requests.MovieRequestDto;
 import com.movie.movieservice.dtos.responses.MovieDetailRes;
+import com.movie.movieservice.dtos.responses.MovieRes;
 import com.movie.movieservice.dtos.responses.MovieNameRes;
 import com.movie.movieservice.entities.Movie;
 
@@ -17,9 +18,11 @@ public interface MovieMapper {
 
     Movie toMovie(MovieRequestDto moviedto);
 
-    MovieDetailRes toMovieRes(Movie movie);
+    MovieDetailRes toMovieDetailRes(Movie movie);
 
     MovieNameRes toMovieNameRes(Movie movie);
+
+    MovieRes toMovieRes(Movie movie);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateMovieFromDto(MovieRequestDto dto, @MappingTarget Movie movie);

@@ -46,6 +46,13 @@ public interface ShowTimeGroupRepository extends JpaRepository<ShowTimeGroup, Lo
 
         @Query("SELECT s FROM ShowTimeGroup s " +
                         "WHERE s.status = 'ACTIVE' " +
+                        "AND s.type = :type" +
                         "AND s.date = :date")
-        List<ShowTimeGroup> findShowTimeGroupsInDate(@Param("date") LocalDate date);
+        List<ShowTimeGroup> findShowTimeGroupsByTypeInDate(@Param("date") LocalDate date, TypeShowTime type);
+
+        @Query("SELECT s FROM ShowTimeGroup s " +
+                        "WHERE s.status = 'ACTIVE' " +
+                        "AND s.movieId = :movieId" +
+                        "AND s.date = :date")
+        List<ShowTimeGroup> findShowTimeGroupsByMovieIdInDate(@Param("date") LocalDate date, Long movieId);
 }
