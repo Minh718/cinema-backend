@@ -6,12 +6,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.movie.cinemaservice.dtos.requests.CinemaCreateReq;
+import com.movie.cinemaservice.dtos.responses.ChatBoxGroupRes;
 import com.movie.cinemaservice.dtos.responses.CinemaRes;
 import com.movie.cinemaservice.entities.Cinema;
 import com.movie.cinemaservice.exceptions.CustomException;
 import com.movie.cinemaservice.exceptions.ErrorCode;
 import com.movie.cinemaservice.mappers.CinemaMapper;
 import com.movie.cinemaservice.repositories.CinemaRepository;
+import com.movie.cinemaservice.repositories.httpClients.MessagingClient;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class CinemaService {
     private final CinemaRepository cinemaRepository;
     private final StorageService storageService;
+    private final MessagingClient messagingClient;
 
     public List<CinemaRes> getAllCinemas() {
 
@@ -28,9 +31,13 @@ public class CinemaService {
     }
 
     public Cinema createCinema(CinemaCreateReq request, MultipartFile image) {
-        storageService.saveImage(image);
+        String imageUrl = storageService.saveImage(image);
 
         Cinema cinema = CinemaMapper.INSTANCE.toCinema(request);
+        cinema.setImageUrl(imageUrl);
+
+        ChatBoxGroupRes chatBoxGroup = messagingClient.createChatBoxGroup(cinema.getName()).getResult();
+        cinema.setChatBoxId(chatBoxGroup.getId());
 
         return cinemaRepository.save(cinema);
     }

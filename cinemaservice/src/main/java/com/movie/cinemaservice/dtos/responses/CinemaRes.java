@@ -18,4 +18,6 @@ public class CinemaRes {
     private String description; // Optional details about this cinema
     private Double latitude; // e.g., 10.762622
     private Double longitude; // e.g., 106.660172
+    private Long chatBoxId;
+
 }

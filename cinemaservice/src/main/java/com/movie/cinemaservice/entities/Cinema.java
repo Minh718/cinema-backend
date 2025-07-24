@@ -45,6 +45,8 @@ public class Cinema {
 
     private String managerId;
 
+    private Long chatBoxId;
+
     @PrePersist
     protected void onCreate() {
         createdAt = updatedAt = LocalDateTime.now();

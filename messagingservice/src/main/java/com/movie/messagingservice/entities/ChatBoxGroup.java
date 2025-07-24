@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "chat_boxes")
+@Table(name = "chatbox_group")
 @Getter
 @Setter
 @NoArgsConstructor

@@ -36,6 +36,11 @@ public class CinemaController {
     private final RoomService roomService;
     private final CinemaService cinemaService;
 
+    @PostMapping("/manager")
+    public ApiRes<Room> createCinema(@RequestBody RoomCreateReq room, @HeaderParam("X-User-Id") String userId) {
+        return ApiRes.<Room>builder().code(200).message("Success").result(roomService.createRoom(room, userId)).build();
+    }
+
     @PostMapping("/manager/create-room")
     public ApiRes<Room> createRoom(@RequestBody RoomCreateReq room, @HeaderParam("X-User-Id") String userId) {
         return ApiRes.<Room>builder().code(200).message("Success").result(roomService.createRoom(room, userId)).build();
