@@ -23,7 +23,7 @@ public class ChatBoxGroup {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "chatBox", cascade = CascadeType.ALL)
-    private List<Message> messages;
+    private List<MessageGroup> messages;
     private LocalDateTime lastMessageAt;
 
 }

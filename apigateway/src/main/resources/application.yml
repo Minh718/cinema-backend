@@ -73,13 +73,19 @@ spring:
               filters:
                 - StripPrefix=1
 
-            - id: messaging-service
+            - id: messaging-service-rest
               uri: lb://messaging-service
               predicates:
                 - Path=/api/messaging/**
               filters:
                 - StripPrefix=1
 
+            - id: messaging-service-ws
+              uri: lb:ws://messaging-service
+              predicates:
+                - Path=/ws/messaging/**
+              filters:
+                - StripPrefix=1
 
                 
             - id: heatseat-service-rest

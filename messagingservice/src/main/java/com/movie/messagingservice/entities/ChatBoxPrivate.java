@@ -6,6 +6,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.movie.messagingservice.enums.ChatBoxPrivateStatus;
+
 @Entity
 @Table(name = "chatbox_private")
 @Getter
@@ -21,7 +23,19 @@ public class ChatBoxPrivate {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "chatBox", cascade = CascadeType.ALL)
-    private List<Message> messages;
+    private List<MessagePrivate> messages;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private ChatBoxPrivateStatus status = ChatBoxPrivateStatus.UNACTIVE;
+
+    @Column(name = "created_by_user_id")
+    private String createdByUserId;
 
     private LocalDateTime lastMessageAt;
+    private String user1Name;
+    private String user1Avatar;
+
+    private String user2Name;
+    private String user2Avatar;
 }

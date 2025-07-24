@@ -24,24 +24,20 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Message {
+public class MessageGroup {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private String message;
 
     private String sender;
-
-    @ManyToOne
-    @JoinColumns({
-            @JoinColumn(name = "user_id1", referencedColumnName = "userId1"),
-            @JoinColumn(name = "user_id2", referencedColumnName = "userId2")
-    })
-    private ChatBoxPrivate chatBoxPrivate;
+    private String name;
+    private String avatar;
 
     @ManyToOne
     @JoinColumn(name = "group_chatbox_id")
