@@ -19,6 +19,7 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/messaging-ws")
+                .setHandshakeHandler(new CustomHandshakeHandler())
                 .setAllowedOrigins("*") // Only allow your frontend origin
                 .withSockJS() // Enable SockJS fallback for older browsers
                 .setSessionCookieNeeded(true); // Enable sending session cookies
