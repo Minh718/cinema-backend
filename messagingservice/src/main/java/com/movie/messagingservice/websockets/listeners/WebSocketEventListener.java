@@ -24,7 +24,7 @@ public class WebSocketEventListener {
         String sessionId = accessor.getSessionId();
         String userId = accessor.getUser().getName(); // or custom ID
         redisTemplate.opsForValue().set("ws_session:" + sessionId, userId);
-        if (destination != null && destination.startsWith("/topic/groups/")) {
+        if (destination != null && !destination.contains("online") && destination.startsWith("/topic/groups/")) {
             String groupId = destination.replace("/topic/groups/", "");
             redisTemplate.opsForSet().add("group:" + groupId + ":online_users", userId);
         }

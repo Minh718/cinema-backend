@@ -12,6 +12,10 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import com.movie.messagingservice.dtos.responses.GroupOnlineInfo;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Component
@@ -23,15 +27,24 @@ public class OnlineUserBroadcasterRedis {
 
     @Scheduled(fixedRate = 5000)
     public void broadcastOnlineCounts() {
+        List<GroupOnlineInfo> payload = new ArrayList<>();
+
         redisTemplate.execute((RedisCallback<Object>) connection -> {
             ScanOptions options = ScanOptions.scanOptions().match("group:*:online_users").build();
             try (Cursor<byte[]> cursor = connection.keyCommands().scan(options)) {
                 while (cursor.hasNext()) {
                     String redisKey = new String(cursor.next());
-                    String groupId = extractGroupId(redisKey);
-                    Long count = redisTemplate.opsForSet().size(redisKey);
-                    if (groupId != null && count != null) {
-                        simpMessagingTemplate.convertAndSend("/topic/groups/" + groupId + "/online", count.intValue());
+                    String groupIdStr = extractGroupId(redisKey);
+                    if (groupIdStr != null) {
+                        try {
+                            Long groupId = Long.parseLong(groupIdStr);
+                            Long count = redisTemplate.opsForSet().size(redisKey);
+                            if (count != null) {
+                                payload.add(new GroupOnlineInfo(groupId, count.intValue()));
+                            }
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -39,6 +52,10 @@ public class OnlineUserBroadcasterRedis {
             }
             return null;
         });
+
+        if (!payload.isEmpty()) {
+            simpMessagingTemplate.convertAndSend("/topic/groups/online", payload);
+        }
     }
 
     private String extractGroupId(String redisKey) {
