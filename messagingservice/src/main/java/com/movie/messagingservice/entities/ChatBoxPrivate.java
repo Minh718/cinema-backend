@@ -20,6 +20,7 @@ public class ChatBoxPrivate {
     @EmbeddedId
     private ChatBoxPrivateKey id;
 
+    private LocalDateTime updatedAt;
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "chatBox", cascade = CascadeType.ALL)
@@ -38,4 +39,15 @@ public class ChatBoxPrivate {
 
     private String user2Name;
     private String user2Avatar;
+
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
