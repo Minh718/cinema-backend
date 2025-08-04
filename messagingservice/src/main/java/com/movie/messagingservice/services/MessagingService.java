@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.hc.core5.http.Message;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -11,8 +12,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.movie.messagingservice.dtos.requests.MessageGroupReq;
+import com.movie.messagingservice.dtos.requests.MessagePrivateReq;
 import com.movie.messagingservice.dtos.responses.ApiRes;
 import com.movie.messagingservice.dtos.responses.ChatBoxGroupRes;
+import com.movie.messagingservice.dtos.responses.ChatBoxPrivateMessageRes;
 import com.movie.messagingservice.dtos.responses.ChatBoxPrivateRes;
 import com.movie.messagingservice.dtos.responses.MessageGroupRes;
 import com.movie.messagingservice.dtos.responses.MessagePrivateRes;
@@ -47,14 +50,14 @@ public class MessagingService {
                 .createdAt(chatBoxGroup.getCreatedAt()).build();
     }
 
-    public void sendMessageToGroup(MessageGroupReq groupMessage) {
-        ChatBoxGroup chatBoxGroup = chatBoxGroupRepository.findById(groupMessage.getGroupId())
+    public void handleSendGroupMessage(MessageGroupReq groupMessage) {
+        ChatBoxGroup chatBoxGroup = chatBoxGroupRepository.findById(groupMessage.getChatBoxId())
                 .orElseThrow(() -> new RuntimeException("Group not found"));
         MessageGroup messageGroup = MessagingMapper.INSTANCE.toMessageGroup(groupMessage);
         messageGroup.setChatBoxGroup(chatBoxGroup);
         chatBoxGroup.getMessages().add(messageGroup);
         chatBoxGroupRepository.save(chatBoxGroup);
-        messagingSocketService.sendMessageToGroup(messageGroup);
+        messagingSocketService.sendGroupMessage(messageGroup);
     }
 
     public Void trackOnlineUser(String userId) {
@@ -112,5 +115,20 @@ public class MessagingService {
         List<MessagePrivate> messagePrivates = messagePrivateRepository.findByChatBoxGroup(chatBoxPrivate, pageable);
         return MessagingMapper.INSTANCE.toMessagePrivateResList(messagePrivates);
 
+    }
+
+    public void handleSendPrivateMessage(MessagePrivateReq privateMessage) {
+        ChatBoxPrivate chatBoxPrivate = chatBoxPrivateRepository
+                .findByStatusAndId_UserId1AndId_UserId2(ChatBoxPrivateStatus.ACTIVE, privateMessage.getReceiver(),
+                        privateMessage.getSender())
+                .orElseThrow(() -> new RuntimeException("Private Chat Box not found"));
+        MessagePrivate message = MessagePrivate.builder().message(privateMessage.getMessage())
+                .sender(privateMessage.getSender()).build();
+        message.setChatBoxPrivate(chatBoxPrivate);
+        messagePrivateRepository.save(message);
+        MessagePrivateRes messagePrivateRes = MessagingMapper.INSTANCE.toMessagePrivateRes(message);
+        ChatBoxPrivateMessageRes chatBoxMessage = ChatBoxPrivateMessageRes.builder().message(message.getMessage())
+                .id(message.getSender()).build();
+        messagingSocketService.sendPrivateMessage(messagePrivateRes, chatBoxMessage, privateMessage.getReceiver());
     }
 }

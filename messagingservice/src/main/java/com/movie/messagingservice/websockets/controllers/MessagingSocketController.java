@@ -5,6 +5,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Controller;
 
 import com.movie.messagingservice.dtos.requests.MessageGroupReq;
+import com.movie.messagingservice.dtos.requests.MessagePrivateReq;
 import com.movie.messagingservice.services.MessagingService;
 
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,13 @@ import lombok.RequiredArgsConstructor;
 public class MessagingSocketController {
     private final MessagingService messagingService;
 
-    @MessageMapping("/groups")
-    public void handleSendMessageToGroup(@Payload MessageGroupReq groupMessage) {
-        messagingService.sendMessageToGroup(groupMessage);
+    @MessageMapping("/group")
+    public void handleSendGroupMessage(@Payload MessageGroupReq groupMessage) {
+        messagingService.handleSendGroupMessage(groupMessage);
+    }
+
+    @MessageMapping("/private")
+    public void handleSendPrivateMessage(@Payload MessagePrivateReq message) {
+        messagingService.handleSendPrivateMessage(message);
     }
 }

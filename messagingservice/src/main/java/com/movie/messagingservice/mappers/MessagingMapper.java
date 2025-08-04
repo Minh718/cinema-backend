@@ -19,7 +19,10 @@ public interface MessagingMapper {
 
     MessageGroupRes toMessageGroupRes(MessageGroup messageGroup);
 
+    MessagePrivateRes toMessagePrivateRes(MessagePrivate messagePrivate);
+
     List<MessageGroupRes> toMessageGroupResList(List<MessageGroup> messageGroups);
 
     List<MessagePrivateRes> toMessagePrivateResList(List<MessagePrivate> messagePrivates);
+
 }

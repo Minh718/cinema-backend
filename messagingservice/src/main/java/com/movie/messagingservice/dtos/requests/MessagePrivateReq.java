@@ -1,7 +1,5 @@
 package com.movie.messagingservice.dtos.requests;
 
-import java.time.LocalDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,10 +15,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class MessageGroupReq {
-    private Long chatBoxId;
-    private String message;
+public class MessagePrivateReq {
+    private String receiver;
     private String sender;
-    private String name;
-    private String avatar;
+    private String message;
 }
