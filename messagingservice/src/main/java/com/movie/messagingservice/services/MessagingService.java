@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import com.movie.messagingservice.dtos.requests.ChatBoxPrivateCreateReq;
 import com.movie.messagingservice.dtos.requests.MessageGroupReq;
 import com.movie.messagingservice.dtos.requests.MessagePrivateReq;
 import com.movie.messagingservice.dtos.responses.ApiRes;
@@ -21,9 +22,11 @@ import com.movie.messagingservice.dtos.responses.MessageGroupRes;
 import com.movie.messagingservice.dtos.responses.MessagePrivateRes;
 import com.movie.messagingservice.entities.ChatBoxGroup;
 import com.movie.messagingservice.entities.ChatBoxPrivate;
+import com.movie.messagingservice.entities.ChatBoxPrivateKey;
 import com.movie.messagingservice.entities.MessageGroup;
 import com.movie.messagingservice.entities.MessagePrivate;
 import com.movie.messagingservice.enums.ChatBoxPrivateStatus;
+import com.movie.messagingservice.mappers.ChatBoxMapper;
 import com.movie.messagingservice.mappers.MessagingMapper;
 import com.movie.messagingservice.repositories.ChatBoxGroupRepository;
 import com.movie.messagingservice.repositories.ChatBoxPrivateRepository;
@@ -70,10 +73,10 @@ public class MessagingService {
         return null;
     }
 
-    public List<ChatBoxPrivateRes> getAllPrivateChatBoxesForUser(String userId) {
+    public List<ChatBoxPrivateRes> getAllPrivateChatBoxesWithStatus(String userId, ChatBoxPrivateStatus status) {
         List<ChatBoxPrivateRes> chatboxRess = new ArrayList<>();
         List<ChatBoxPrivate> chatboxs = chatBoxPrivateRepository
-                .findAllByStatusAndId_UserId1OrId_UserId2(ChatBoxPrivateStatus.ACTIVE, userId, userId);
+                .findAllByStatusAndId_UserId1OrId_UserId2(status, userId, userId);
         if (chatboxs.size() == 0)
             return chatboxRess;
         boolean isUser1 = chatboxs.get(0).getId().getUserId1().equals(userId);
@@ -130,5 +133,21 @@ public class MessagingService {
         ChatBoxPrivateMessageRes chatBoxMessage = ChatBoxPrivateMessageRes.builder().message(message.getMessage())
                 .id(message.getSender()).build();
         messagingSocketService.sendPrivateMessage(messagePrivateRes, chatBoxMessage, privateMessage.getReceiver());
+    }
+
+    public void sendFriendRequest(String userId, ChatBoxPrivateCreateReq chatbox) {
+        ChatBoxPrivateKey id = new ChatBoxPrivateKey(userId, chatbox.getUserId2());
+        ChatBoxPrivate chatBoxPrivate = ChatBoxMapper.INSTANCE.toChatBoxPrivate(chatbox);
+        chatBoxPrivate.setId(id);
+        chatBoxPrivate.setCreatedByUserId(userId);
+        chatBoxPrivateRepository.save(chatBoxPrivate);
+    }
+
+    public void acceptFriendRequest(String userId, String userId1) {
+        ChatBoxPrivate chatBoxPrivate = chatBoxPrivateRepository
+                .findByStatusAndId_UserId1AndId_UserId2(ChatBoxPrivateStatus.UNACTIVE, userId1, userId)
+                .orElseThrow(() -> new RuntimeException("Private Chat Box not found"));
+        chatBoxPrivate.setStatus(ChatBoxPrivateStatus.ACTIVE);
+        chatBoxPrivateRepository.save(chatBoxPrivate);
     }
 }

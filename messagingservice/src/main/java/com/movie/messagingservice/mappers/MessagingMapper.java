@@ -24,5 +24,4 @@ public interface MessagingMapper {
     List<MessageGroupRes> toMessageGroupResList(List<MessageGroup> messageGroups);
 
     List<MessagePrivateRes> toMessagePrivateResList(List<MessagePrivate> messagePrivates);
-
 }
